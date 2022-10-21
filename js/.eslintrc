@@ -1,0 +1,21 @@
+{
+  "parser": "@babel/eslint-parser",
+  "extends": ["prettier"],
+  "plugins": ["prettier", "import"],
+  "rules": {
+    "arrow-body-style": ["error", "as-needed"],
+    "eqeqeq": ["error", "always"],
+    "no-unexpected-multiline": "error",
+    "prefer-const": "error",
+    "prettier/prettier": "error",
+    "no-var": "error"
+  },
+  "env": {
+    "browser": true,
+    "node": false
+  },
+  "settings": {
+    "import/extensions": [".js"]
+  },
+  "ignorePatterns": ["node_modules", "build"]
+}

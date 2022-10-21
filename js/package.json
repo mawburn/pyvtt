@@ -1,14 +1,39 @@
 {
   "name": "pyvtt",
+  "version": "1.4.7",
+  "description": "Pythong VTT",
+  "repository": "https://github.com/cgloeckner/pyvtt",
+  "author": "cgloeckner",
+  "license": "MIT",
   "private": true,
-  "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "build": "rimraf bulid && rollup -c",
+    "lint:fix": "eslint --fix ./src/**/*.js",
+    "lint:rollup": "eslint --fix ./rollup.config.js"
   },
   "devDependencies": {
-    "vite": "^3.1.0"
+    "@babel/core": "^7.19.6",
+    "@babel/eslint-parser": "^7.19.1",
+    "@babel/preset-env": "^7.19.4",
+    "@rollup/plugin-babel": "^6.0.0",
+    "@rollup/plugin-commonjs": "^23.0.1",
+    "@rollup/plugin-json": "^5.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.0",
+    "autoprefixer": "^10.4.12",
+    "eslint": "^8.25.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "postcss": "^8.4.18",
+    "prettier": "^2.7.1",
+    "rimraf": "^3.0.2",
+    "rollup": "^3.2.3",
+    "rollup-plugin-postcss": "^4.0.2"
+  },
+  "dependencies": {
+    "jquery": "3.3.1",
+    "normalize.css": "^8.0.1",
+    "rollup-plugin-terser": "^7.0.2"
   }
 }
