@@ -28,11 +28,11 @@ const update_ids = []
 
 /// Add a music slot
 function addMusicSlot(slot_id) {
-  if ($('#musiccontrols').css('display') == 'none') {
+  if ($('#musiccontrols').css('display') === 'none') {
     $('#musiccontrols').show(1000)
   }
 
-  if ($('#musicslot' + slot_id).length == 0) {
+  if ($('#musicslot' + slot_id).length === 0) {
     // create container
     const div_id = 'id="musicslot' + slot_id + '"'
     const div_title = 'title="MUSIC SLOT ' + (slot_id + 1) + '"'
@@ -56,9 +56,9 @@ function addMusicSlot(slot_id) {
     // pick previous container
     const prev_id = parseInt(slot_id) - 1
     const previous = $('#musicslot' + prev_id)
-    if (slot_id == 0) {
+    if (slot_id === 0) {
       $('#musicslots').prepend(container)
-    } else if (previous.length == 1) {
+    } else if (previous.length === 1) {
       $(container).insertAfter(previous)
     } else {
       $('#musicslots').append(container)
@@ -76,7 +76,7 @@ function onPlayMusicSlot(slot_id) {
 
   // check if track was already selected
   let action = 'play'
-  if (slot_id == playback) {
+  if (slot_id === playback) {
     action = 'pause'
   }
 
@@ -111,7 +111,7 @@ function onRemoveMusicSlot(slot_id) {
       slots: [slot_id],
     })
 
-    if (num_slots == 0) {
+    if (num_slots === 0) {
       $('#musiccontrols').hide(1000)
     }
   }
@@ -135,13 +135,13 @@ function playMusicSlot(slot_id, update_id) {
 }
 
 function updateSlotHighlight(slot_id) {
-  if (playback != null) {
+  if (playback !== null) {
     $('#musicslot' + playback).removeClass('playback')
   }
 
   playback = slot_id
 
-  if (playback != null) {
+  if (playback !== null) {
     $('#musicslot' + playback).addClass('playback')
   }
 }
@@ -152,7 +152,7 @@ function updateMusicUi() {
   // update play button and volume display
   const raw_volume = getAudioVolume(player)
   let vol_str = parseInt(raw_volume * 100) + '%'
-  if (player.paused || raw_volume == 0.0) {
+  if (player.paused || raw_volume === 0.0) {
     vol_str = '<img src="/static/muted.png" class="icon" />'
   }
   $('#musicvolume')[0].innerHTML = vol_str
@@ -176,7 +176,7 @@ function pauseMusic() {
 function removeMusicSlot(slot_id) {
   $('#musicslot' + slot_id).remove()
 
-  if (playback == slot_id) {
+  if (playback === slot_id) {
     playback = null
     const player = $('#audioplayer')[0]
     player.pause()
@@ -232,7 +232,7 @@ function onStepMusic(direction) {
 function onInitMusicPlayer(gmurl, url) {
   // setup default volume
   const raw = localStorage.getItem('volume')
-  if (raw != null) {
+  if (raw !== null) {
     default_volume = parseFloat(raw)
   } else {
     default_volume = 0.1

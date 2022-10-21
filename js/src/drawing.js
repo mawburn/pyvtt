@@ -19,7 +19,7 @@ function Line(x1, y1, x2, y2, width, color) {
 }
 
 function drawLine(line, target) {
-  if (line.x1 == null || line.x2 == null) {
+  if (line.x1 === null || line.x2 === null) {
     return
   }
   target.beginPath()
@@ -44,10 +44,9 @@ function drawAll(target) {
   // search for background token
   if (doodle_on_background) {
     // query background token
-    var background = null
     $.each(tokens, function (index, token) {
-      if (token != null) {
-        if (token.size == -1) {
+      if (token !== null) {
+        if (token.size === -1) {
           background = token
         }
       }
@@ -61,7 +60,7 @@ function drawAll(target) {
   target.lineCap = 'round'
 
   // load background if necessary
-  if (background != null && images[background.url] != null) {
+  if (background !== null && images[background.url] !== null) {
     // load background into canvas
     const sizes = getActualSize(background, canvas.width, canvas.height)
     sizes[0] *= canvas_scale
@@ -110,7 +109,7 @@ function detectPressure(event) {
   let use_pen = $('#penenable')[0].checked
   let pressure = 1.0
 
-  if (event.type == 'touchstart' || event.type == 'touchmove') {
+  if (event.type === 'touchstart' || event.type === 'touchmove') {
     // search all touches to use pen primarily
     let found = event.touches[0] // fallback: 1st touch
     if (use_pen) {
@@ -132,7 +131,7 @@ function detectPressure(event) {
   }
   $('#penenable')[0].checked = use_pen
 
-  if (!use_pen || pressure == 1.0) {
+  if (!use_pen || pressure === 1.0) {
     pressure = parseInt(localStorage.getItem('draw_pressure'))
     if (isNaN(pressure)) {
       localStorage.setItem('draw_pressure', 20)
@@ -152,7 +151,7 @@ function getDoodlePos(event) {
 
   const box = canvas.getBoundingClientRect()
 
-  if (event.type == 'touchstart' || event.type == 'touchmove') {
+  if (event.type === 'touchstart' || event.type === 'touchmove') {
     // use first touch event
     event = event.touches[0]
   }
@@ -173,8 +172,8 @@ function onMovePen(event) {
   event.preventDefault()
 
   // redraw everything
-  var canvas = $('#doodle')[0]
-  var context = canvas.getContext('2d')
+  let canvas = $('#doodle')[0]
+  let context = canvas.getContext('2d')
   drawAll(context)
 
   // grab relevant data
@@ -183,9 +182,9 @@ function onMovePen(event) {
   const color = $('#pencolor')[0].value
   drawDot(pos[0], pos[1], color, width, context)
 
-  if (event.buttons == 1 || event.type == 'touchstart' || event.type == 'touchmove') {
+  if (event.buttons === 1 || event.type === 'touchstart' || event.type === 'touchmove') {
     // drag mode
-    if (drag != null) {
+    if (drag !== null) {
       straight = null
 
       // add segment
@@ -197,7 +196,7 @@ function onMovePen(event) {
     drag = pos
   } else if (event.shiftKey) {
     // straight line mode
-    if (straight != null) {
+    if (straight !== null) {
       // update end point
       straight.x2 = pos[0]
       straight.y2 = pos[1]
@@ -205,8 +204,8 @@ function onMovePen(event) {
       straight.color = color
 
       // redraw (including preview)
-      var canvas = $('#doodle')[0]
-      var context = canvas.getContext('2d')
+      canvas = $('#doodle')[0]
+      context = canvas.getContext('2d')
       drawAll(context)
       drawLine(straight, context)
     }
@@ -226,7 +225,7 @@ function onReleasePen(event) {
 
   if (event.shiftKey) {
     // straight mode:
-    if (straight != null && straight.x2 != null) {
+    if (straight !== null && straight.x2 !== null) {
       // finish line
       straight.width = width
       straight.color = color

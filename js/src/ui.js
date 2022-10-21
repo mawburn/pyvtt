@@ -80,15 +80,15 @@ function selectToken(x, y) {
 
   // search for any fitting culling with highest z-order (unlocked first)
   $.each(culling, function (index, item) {
-    if (item != null && !item.locked && item.zorder > bestz && isOverToken(x, y, item)) {
+    if (item !== null && !item.locked && item.zorder > bestz && isOverToken(x, y, item)) {
       bestz = item.zorder
       result = item
     }
   })
-  if (result == null) {
+  if (result === null) {
     // try locked tokens next
     $.each(culling, function (index, item) {
-      if (item != null && item.locked && item.zorder > bestz && isOverToken(x, y, item)) {
+      if (item !== null && item.locked && item.zorder > bestz && isOverToken(x, y, item)) {
         bestz = item.zorder
         result = item
       }
@@ -117,7 +117,7 @@ function Player(name, uuid, color, ip, country, agent, flag, index) {
 
 function getCookie(key) {
   const arr = document.cookie.split(key + '=')[1]
-  if (arr == null) {
+  if (arr === null) {
     return ''
   }
   return arr.split('; ')[0]
@@ -164,7 +164,7 @@ function showPlayer(p, force = false) {
     menu +=
       '<img src="/static/left.png" draggable="false" class="left" title="MOVE TO LEFT" onClick="onPlayerOrder(-1);" />'
   }
-  if (is_gm && p.uuid != my_uuid) {
+  if (is_gm && p.uuid !== my_uuid) {
     menu +=
       '<img src="/static/delete.png" draggable="false" class="center" title="KICK PLAYER" onClick="kickPlayer(\'' +
       game_url +
@@ -271,7 +271,7 @@ function stopDragRoll(event, elem) {
 
 /// Handle clicking a rollhistory's die
 function onClickRoll(event, elem) {
-  if (event.buttons == 2) {
+  if (event.buttons === 2) {
     elem.remove()
   }
 }
@@ -286,12 +286,12 @@ function logRoll(sides, result) {
   const y = 20 + 50 * col + Math.random() * 15
 
   const css = ''
-  if (sides == 2) {
+  if (sides === 2) {
     // use D6 as binary dice
     sides = 6
-    result = result == 2 ? '<img src="/static/skull.png" />' : ''
+    result = result === 2 ? '<img src="/static/skull.png" />' : ''
   }
-  if (sides == 100) {
+  if (sides === 100) {
     // use D10 for D100
     sides = 10
   }
@@ -338,35 +338,35 @@ function logRoll(sides, result) {
 function addRoll(sides, result, name, color, recent) {
   roll_history[sides + '_' + name] = result
 
-  if (recent && color == my_color) {
+  if (recent && color === my_color) {
     logRoll(sides, result)
   }
 
   // handling min-/max-rolls
   let ani_css = ''
   let lbl_css = ''
-  if (result == 1) {
+  if (result === 1) {
     ani_css = 'minani'
     lbl_css = ' minroll'
-  } else if (result == sides) {
+  } else if (result === sides) {
     ani_css = 'maxani'
     lbl_css = ' maxroll'
   }
 
   // special case: d2
   let result_label = result
-  if (sides == 2) {
+  if (sides === 2) {
     result_label =
-      result == 2 ? '<img src="/static/skull.png" />' : '<img src="/static/transparent.png" />'
+      result === 2 ? '<img src="/static/skull.png" />' : '<img src="/static/transparent.png" />'
   }
 
   // special case: d100
-  if (sides == 100) {
+  if (sides === 100) {
     // use d10's results box
     sides = 10
     if (result < 10) {
       result_label = '0' + result
-    } else if (result == 100) {
+    } else if (result === 100) {
       result_label = '00'
     }
   }
@@ -410,7 +410,7 @@ function addRoll(sides, result, name, color, recent) {
       }
     })
 
-    if (ani_css == 'maxani') {
+    if (ani_css === 'maxani') {
       // let animation fade out earlier
       const ani = $(dom_span.children()[1])
       ani.delay(3000).fadeOut(500)
@@ -429,16 +429,16 @@ function onDrag(event) {
   event.preventDefault()
   pickCanvasPos(event)
 
-  if (drag_data == 'rollbox') {
+  if (drag_data === 'rollbox') {
     onDragRoll(event)
-  } else if (drag_data == 'players') {
+  } else if (drag_data === 'players') {
     onDragPlayers(event)
-  } else if (drag_data == 'music') {
+  } else if (drag_data === 'music') {
     onDragMusic(event)
-  } else if (primary_id != 0) {
-    if (drag_data == 'resize') {
+  } else if (primary_id !== 0) {
+    if (drag_data === 'resize') {
       onTokenResize(event)
-    } else if (drag_data == 'rotate') {
+    } else if (drag_data === 'rotate') {
       onTokenRotate(event)
     }
   } else {
@@ -472,7 +472,7 @@ function onTokenResize(event) {
   // resize all selected tokens
   $.each(select_ids, function (index, id) {
     const token = tokens[id]
-    if (token == null || token.locked) {
+    if (token === null || token.locked) {
       return
     }
     let size = Math.round(token.size * ratio * 2)
@@ -533,12 +533,12 @@ function onTokenRotate(event) {
   // rotate all selected tokens
   $.each(select_ids, function (index, id) {
     const token = tokens[id]
-    if (token == null || token.locked) {
+    if (token === null || token.locked) {
       return
     }
 
     // undo last rotation
-    if (token_last_angle != null) {
+    if (token_last_angle !== null) {
       token.rotate -= token_last_angle
     }
 
@@ -552,7 +552,7 @@ function onTokenRotate(event) {
 }
 
 function isSingleAudio(queue) {
-  return queue.files.length == 1 && queue.files[0].type == 'audio/mpeg'
+  return queue.files.length === 1 && queue.files[0].type === 'audio/mpeg'
 }
 
 function fetchMd5FromImages(filelist, onfinished) {
@@ -562,7 +562,7 @@ function fetchMd5FromImages(filelist, onfinished) {
   $.each(filelist, function (index, file) {
     content = file.type.split('/')[0]
 
-    if (content == 'image') {
+    if (content === 'image') {
       ++num_images
     }
   })
@@ -571,14 +571,14 @@ function fetchMd5FromImages(filelist, onfinished) {
   $.each(filelist, function (index, file) {
     content = file.type.split('/')[0]
 
-    if (content == 'image') {
+    if (content === 'image') {
       const filereader = new FileReader()
       filereader.readAsBinaryString(file)
 
       filereader.onload = function (event) {
         md5s.push(md5(filereader.result))
         ++ready_images
-        if (ready_images == num_images) {
+        if (ready_images === num_images) {
           onfinished(md5s)
         }
       }
@@ -588,8 +588,8 @@ function fetchMd5FromImages(filelist, onfinished) {
     }
   })
 
-  if (ready_images == num_images) {
-    // probably == 0 if audio only
+  if (ready_images === num_images) {
+    // probably === 0 if audio only
     onfinished(md5s)
   }
 }
@@ -600,17 +600,17 @@ function checkFile(file, index) {
   let max_filesize = 0
   let file_type = ''
   // check image filesize
-  if (content == 'image') {
+  if (content === 'image') {
     max_filesize = MAX_TOKEN_FILESIZE
     file_type = 'TOKEN'
-    if (index == 0 && !background_set) {
+    if (index === 0 && !background_set) {
       // first file is assumed as background image
       max_filesize = MAX_BACKGROUND_FILESIZE
       file_type = 'BACKGROUND'
     }
 
     // check music filesize
-  } else if (content == 'audio') {
+  } else if (content === 'audio') {
     max_filesize = MAX_MUSIC_FILESIZE
     file_type = 'MUSIC'
   }
@@ -619,7 +619,7 @@ function checkFile(file, index) {
     return 'TOO LARGE ' + file_type + ' (MAX ' + max_filesize + ' MiB)'
   }
 
-  if (content == 'audio' && $('#musicslots').children().length == MAX_MUSIC_SLOTS) {
+  if (content === 'audio' && $('#musicslots').children().length === MAX_MUSIC_SLOTS) {
     return 'QUEUE FULL, RIGHT-CLICK SLOT TO CLEAR'
   }
 
@@ -630,7 +630,7 @@ function onDrop(event) {
   event.preventDefault()
   pickCanvasPos(event)
 
-  if (localStorage.getItem('drag_data') != null) {
+  if (localStorage.getItem('drag_data') !== null) {
     // ignore
     return
   }
@@ -639,14 +639,14 @@ function onDrop(event) {
   // check file sizes
   let error_msg = ''
   $.each(event.dataTransfer.files, function (index, file) {
-    if (error_msg != '') {
+    if (error_msg !== '') {
       return
     }
 
     error_msg = checkFile(file, index)
   })
 
-  if (error_msg != '') {
+  if (error_msg !== '') {
     showError(error_msg)
     return
   }
@@ -675,12 +675,12 @@ function uploadFilesViaMd5(gm_name, game_url, md5s, files, at_x, at_y) {
       $.each(files, function (index, file) {
         content = file.type.split('/')[0]
 
-        if (content == 'image') {
+        if (content === 'image') {
           // add unknown image file
-          if (known_urls[index] == null) {
+          if (known_urls[index] === null) {
             f.append('file[]', file)
           }
-        } else if (content == 'audio') {
+        } else if (content === 'audio') {
           // add audio file
           f.append('file[]', file)
         }
@@ -721,7 +721,7 @@ function uploadFiles(gm_name, game_url, f, known_urls, x, y) {
         })
 
         $.each(known_urls, function (index, url) {
-          if (url != null) {
+          if (url !== null) {
             total_urls.push(url)
           }
         })
@@ -737,7 +737,7 @@ function uploadFiles(gm_name, game_url, f, known_urls, x, y) {
       }
 
       if (response['music'].length > 0) {
-        if (response['music'][0] == null) {
+        if (response['music'][0] === null) {
           // notify full slots
           showError('QUEUE FULL, RIGHT-CLICK SLOT TO CLEAR')
         } else {
@@ -784,7 +784,7 @@ function updateTokenbar() {
   if (primary_id && !grabbed) {
     token = tokens[primary_id]
 
-    if (token == null) {
+    if (token === null) {
       return
     }
 
@@ -802,7 +802,7 @@ function updateTokenbar() {
     // determine token size
     const canvas = $('#battlemap')
     let size = token.size * viewport.zoom
-    if (size == -1) {
+    if (size === -1) {
       size = canvas[0].height
     } else if (size < 50) {
       size = 50
@@ -840,7 +840,7 @@ function updateTokenbar() {
     const padding = 20
 
     const icons = [token_icons]
-    var isInt = token.text.startsWith('#') || (!isNaN(token.text) && token.text != '')
+    var isInt = token.text.startsWith('#') || (!isNaN(token.text) && token.text !== '')
 
     if (isInt) {
       icons.push(['LabelInc', 'LabelDec'])
@@ -854,7 +854,7 @@ function updateTokenbar() {
         const c = Math.cos((-index * degree * 3.14) / 180)
 
         let radius = size * 0.7 * canvas_scale
-        if (i == 1) {
+        if (i === 1) {
           // shrink radius for inner icons
           radius *= 0.5
         }
@@ -904,7 +904,7 @@ function updateTokenbar() {
       $('#tokenDelete').css('visibility', '')
       $('#tokenLabel').css('visibility', '')
 
-      var isInt = token.text.startsWith('#') || (!isNaN(token.text) && token.text != '')
+      var isInt = token.text.startsWith('#') || (!isNaN(token.text) && token.text !== '')
 
       if (isInt) {
         $('#tokenLabelDec').css('visibility', '')
@@ -921,7 +921,7 @@ function updateTokenbar() {
 
 /// Select mouse/touch position relative to the screen
 function pickScreenPos(event) {
-  if ((event.type == 'touchstart' || event.type == 'touchmove') && event.touches.length == 1) {
+  if ((event.type === 'touchstart' || event.type === 'touchmove') && event.touches.length === 1) {
     const touchobj = event.touches[0]
     var x = touchobj.clientX
     var y = touchobj.clientY
@@ -991,13 +991,13 @@ function onGrab(event) {
   closeGmDropdown()
 
   pickCanvasPos(event)
-  if (!space_bar && event.buttons != 4) {
+  if (!space_bar && event.buttons !== 4) {
     // reset "user was scrolling" memory
     was_scrolled = false
   }
 
-  const is_single_touch = event.type == 'touchstart' && event.touches.length == 1
-  const is_pinch_touch = event.type == 'touchstart' && event.touches.length == 2
+  const is_single_touch = event.type === 'touchstart' && event.touches.length === 1
+  const is_pinch_touch = event.type === 'touchstart' && event.touches.length === 2
   if (is_pinch_touch) {
     touch_start = calcPinchCenter()
     pinch_distance = calcPinchDistance()
@@ -1007,7 +1007,7 @@ function onGrab(event) {
     touch_force = event.touches[0].force
   }
 
-  if (event.buttons == 1 || is_single_touch) {
+  if (event.buttons === 1 || is_single_touch) {
     // trigger check for holding the click
     now = Date.now()
     const time_delta = now - initial_click
@@ -1028,7 +1028,7 @@ function onGrab(event) {
       let x2 = mouse_x
       let y2 = mouse_x
 
-      if (token != null) {
+      if (token !== null) {
         x2 = token.posx
         y2 = token.posy
       }
@@ -1046,7 +1046,7 @@ function onGrab(event) {
         width: Math.abs(x1 - x2),
         height: Math.abs(y1 - y2),
       })
-    } else if (token != null) {
+    } else if (token !== null) {
       $('#battlemap').css('cursor', 'move')
 
       let modified = false
@@ -1054,7 +1054,7 @@ function onGrab(event) {
       if (event.ctrlKey || event.metaKey) {
         // toggle token in/out selection group
         const index = select_ids.indexOf(token.id)
-        if (index != -1) {
+        if (index !== -1) {
           // remove from selection
           select_ids.splice(index, 1)
         } else {
@@ -1101,7 +1101,7 @@ function onGrab(event) {
         select_from_y = null
       }
 
-      if (token == null) {
+      if (token === null) {
         // unselect
         writeSocket({
           OPID: 'RANGE',
@@ -1113,7 +1113,7 @@ function onGrab(event) {
         })
       }
     }
-  } else if (event.buttons == 2 && !is_single_touch) {
+  } else if (event.buttons === 2 && !is_single_touch) {
     // Right click: reset token scale, flip-x & rotation
     const changes = []
     $.each(select_ids, function (index, id) {
@@ -1152,7 +1152,7 @@ function onGrab(event) {
 /// Event handle for releasing click/touch (outside canvas)
 function onReleaseDoc() {
   if ((!space_bar || was_touch) && !was_scrolled) {
-    if (select_from_x != null) {
+    if (select_from_x !== null) {
       // range select tokens (including resetting selection)
 
       let select_width = mouse_x - select_from_x
@@ -1202,7 +1202,7 @@ function onRelease() {
 
   touch_force = 0.0
   touch_start = null
-  const was_touch = event.type == 'touchend'
+  const was_touch = event.type === 'touchend'
 
   if (isNaN(mouse_x) || isNaN(mouse_y)) {
     // WORKAROUND: prevent mobile from crashing on pinch-zoom
@@ -1253,7 +1253,7 @@ function limitViewportPosition() {
 function onMoveToken(event) {
   const token = tokens[primary_id]
 
-  if (token == null || token.locked) {
+  if (token === null || token.locked) {
     // skip: no primary token or it is locked
     return
   }
@@ -1261,7 +1261,7 @@ function onMoveToken(event) {
   // transform cursor
   const battlemap = $('#battlemap')
 
-  if (token == null) {
+  if (token === null) {
     battlemap.css('cursor', 'default')
   } else if (token.locked) {
     battlemap.css('cursor', 'not-allowed')
@@ -1340,27 +1340,27 @@ function onMoveViewport(dx, dy) {
 }
 
 function isExtremeForce(force) {
-  return force == 0.0 || force == 1.0
+  return force === 0.0 || force === 1.0
 }
 
 /// Event handle for moving mouse/finger
 function onMove(event) {
-  if (event.type == 'touchmove') {
+  if (event.type === 'touchmove') {
     // prevent scrolling
     event.preventDefault()
   }
 
   pickCanvasPos(event)
 
-  const is_single_touch = event.type == 'touchmove' && event.touches.length == 1
-  const is_pinch_touch = event.type == 'touchmove' && event.touches.length == 2
+  const is_single_touch = event.type === 'touchmove' && event.touches.length === 1
+  const is_pinch_touch = event.type === 'touchmove' && event.touches.length === 2
 
   if (is_pinch_touch) {
     // interpret pinch as zooming
     onWheel(event)
-  } else if ((event.buttons == 1 && !space_bar) || is_single_touch) {
+  } else if ((event.buttons === 1 && !space_bar) || is_single_touch) {
     // handle left click (without spacebar) or touch event
-    if (primary_id != 0 && grabbed) {
+    if (primary_id !== 0 && grabbed) {
       onMoveToken(event)
     } else if (is_single_touch) {
       if (isExtremeForce(touch_force)) {
@@ -1373,7 +1373,7 @@ function onMove(event) {
         onMoveViewport(-dx, -dy)
       }
     }
-  } else if (event.buttons == 4 || (event.buttons == 1 && space_bar)) {
+  } else if (event.buttons === 4 || (event.buttons === 1 && space_bar)) {
     // handle wheel click or leftclick (with space bar)
     // @NOTE: move against drag direction
     var dx = -event.movementX / viewport.zoom
@@ -1385,7 +1385,7 @@ function onMove(event) {
 
     // transform cursor
     const battlemap = $('#battlemap')
-    if (token == null) {
+    if (token === null) {
       battlemap.css('cursor', 'default')
     } else if (token.locked) {
       battlemap.css('cursor', 'not-allowed')
@@ -1434,8 +1434,8 @@ function onWheel(event) {
     reference_y = mouse_y
   }
 
-  const is_pinch_touch = event.type == 'touchmove' && event.touches.length == 2
-  if (is_pinch_touch && pinch_distance != null) {
+  const is_pinch_touch = event.type === 'touchmove' && event.touches.length === 2
+  if (is_pinch_touch && pinch_distance !== null) {
     // calculate pinch direction (speed is ignored!)
     const new_pinch_distance = calcPinchDistance()
     delta = pinch_distance - new_pinch_distance
@@ -1474,7 +1474,7 @@ function onWheel(event) {
 
   // force all token labels to be redrawn
   $.each(tokens, function (index, token) {
-    if (token != null) {
+    if (token !== null) {
       token.hue_canvas = null
     }
   })
@@ -1524,8 +1524,8 @@ function rollDice(sides) {
   target.removeClass('shake').hide().delay(10).show().addClass('shake')
   poofani.removeClass('dicepoof').hide().delay(10).show().addClass('dicepoof')
 
-  if (sides == 10) {
-    if (d100_queue[0] != 10) {
+  if (sides === 10) {
+    if (d100_queue[0] !== 10) {
       // bank d10 and schedule roll
       d100_queue.push(10)
       setTimeout(function () {
@@ -1549,7 +1549,7 @@ function rollDice(sides) {
 function toggleDiceHistory() {
   const history = $('#dicehistory')
 
-  if (history.css('display') == 'none') {
+  if (history.css('display') === 'none') {
     history.fadeIn(500)
   } else {
     history.fadeOut(500)
@@ -1562,12 +1562,12 @@ function selectAllTokens() {
 
   select_ids = []
   $.each(tokens, function (index, token) {
-    if (token != null && token.size != -1) {
+    if (token !== null && token.size !== -1) {
       select_ids.push(token.id)
     }
   })
 
-  if (select_ids.length > 0 && primary_id == null) {
+  if (select_ids.length > 0 && primary_id === null) {
     primary_id = select_ids[0]
   }
 }
@@ -1617,7 +1617,7 @@ function onShortcut(event) {
         hovered_sides = parseInt(this.id.split('drag')[0].split('d')[1])
       }
     })
-  if (hovered_sides != null) {
+  if (hovered_sides !== null) {
     // trigger 1-9 dice rolls
     if (1 <= event.key && event.key <= 9) {
       for (let i = 0; i < event.key; ++i) {
@@ -1626,35 +1626,35 @@ function onShortcut(event) {
     }
   }
 
-  space_bar = event.key == ' '
+  space_bar = event.key === ' '
 
   // metaKey for Mac's Command Key
   if (event.ctrlKey || event.metaKey) {
-    if (event.key.toLowerCase() == 'a') {
+    if (event.key.toLowerCase() === 'a') {
       selectAllTokens()
-    } else if (event.key.toLowerCase() == 'c') {
+    } else if (event.key.toLowerCase() === 'c') {
       copySelectedTokens()
-    } else if (event.key.toLowerCase() == 'v') {
+    } else if (event.key.toLowerCase() === 'v') {
       pasteCopiedTokens()
     }
   } else {
     // Backspace for MacBook's delete key
-    if (event.key == 'Delete' || event.key == 'Backspace') {
+    if (event.key === 'Delete' || event.key === 'Backspace') {
       deleteSelectedTokens()
     }
 
     // handle movement of zoomed viewport
     // @NOTE: move with arrow direction
-    if (event.key == 'ArrowUp') {
+    if (event.key === 'ArrowUp') {
       onMoveViewport(0, -viewport_scroll_delta / viewport.zoom)
     }
-    if (event.key == 'ArrowDown') {
+    if (event.key === 'ArrowDown') {
       onMoveViewport(0, viewport_scroll_delta / viewport.zoom)
     }
-    if (event.key == 'ArrowLeft') {
+    if (event.key === 'ArrowLeft') {
       onMoveViewport(-viewport_scroll_delta / viewport.zoom, 0)
     }
-    if (event.key == 'ArrowRight') {
+    if (event.key === 'ArrowRight') {
       onMoveViewport(viewport_scroll_delta / viewport.zoom, 0)
     }
   }
@@ -1673,7 +1673,7 @@ function onFlipX() {
   $.each(select_ids, function (index, id) {
     const token = tokens[id]
 
-    if (token == null || token.locked) {
+    if (token === null || token.locked) {
       // ignore if locked
       return
     }
@@ -1772,9 +1772,9 @@ function onQuitRotate() {
 /// Event handle for quitting rotation/resize dragging
 function onQuitAction(event) {
   const action = localStorage.getItem('drag_data')
-  if (action == 'rotate') {
+  if (action === 'rotate') {
     onQuitRotate()
-  } else if (action == 'resize') {
+  } else if (action === 'resize') {
     onQuitResize()
   }
 
@@ -1822,13 +1822,13 @@ function onLabelStep(delta) {
 
   $.each(select_ids, function (index, id) {
     const token = tokens[id]
-    if (token == null) {
+    if (token === null) {
       return
     }
     const isTimer = token.text.startsWith('#')
-    const isInt = isTimer || (!isNaN(token.text) && token.text != '')
+    const isInt = isTimer || (!isNaN(token.text) && token.text !== '')
 
-    if (token == null || token.locked || !isInt) {
+    if (token === null || token.locked || !isInt) {
       // ignore if locked
       return
     }
@@ -1858,7 +1858,7 @@ function onLabelStep(delta) {
     token.label_canvas = null
     token.hue_canvas = null
 
-    if (number == 0 && isTimer) {
+    if (number === 0 && isTimer) {
       deleted.push(id)
     } else {
       changes.push({
@@ -1886,13 +1886,13 @@ function onLabelStep(delta) {
 function onLabel() {
   event.preventDefault()
 
-  if (select_ids.length == 0) {
+  if (select_ids.length === 0) {
     return
   }
 
   const primary = tokens[select_ids[0]]
   let text = window.prompt('TOKEN LABEL (MAX LENGTH 15)', primary.text)
-  if (text == null) {
+  if (text === null) {
     return
   }
 
@@ -1994,7 +1994,7 @@ function onStartDragDice(event, sides) {
 
 /// Event handle for clicking a single dice container
 function onResetDice(event, sides) {
-  if (event.buttons == 2) {
+  if (event.buttons === 2) {
     // reset dice position
     resetDicePos(sides)
   }
@@ -2032,7 +2032,7 @@ function onEndDragDice(event) {
   // drop timer within scene
   if (min_x <= mouse_x && mouse_x <= max_x && min_y <= mouse_y && mouse_y <= max_y) {
     // query last recent roll of that die by the current player
-    if (sides == 2) {
+    if (sides === 2) {
       // ignore binary die
       return
     }
@@ -2057,7 +2057,7 @@ function onStartDragPlayers(event) {
 
 /// Event handle for clicking the players container
 function onResetPlayers(event) {
-  if (event.buttons == 2) {
+  if (event.buttons === 2) {
     // reset players position
     const target = $('#players')
     const pos = [
@@ -2087,15 +2087,15 @@ function onStartDragMusic(event) {
 /** NOT USED ANYMORE
 /// Event handle for clicking the music tools container
 function onResetMusic(event) {
-    if (event.buttons == 2) {
+    if (event.buttons === 2) {
         // reset music tools position
         var target = $('#musiccontrols');
         var x = window.innerWidth - target.width() * 1.75;
         var y = window.innerHeight * 0.5;
-        
+
         // apply position
         moveMusicTo([x, y]);
-        
+
         localStorage.removeItem('music');
     }
 }
@@ -2125,13 +2125,13 @@ function snapContainer(x, y, container, default_snap) {
   const dx = window.innerWidth - x // distance to right
   const dy = window.innerHeight - y // distance to bottom
 
-  if (default_snap == 'left' || x <= Math.min(y, dx, dy)) {
+  if (default_snap === 'left' || x <= Math.min(y, dx, dy)) {
     // snap to left
     return [min_x, y, 'left']
-  } else if (default_snap == 'top' || y <= Math.min(x, dx, dy)) {
+  } else if (default_snap === 'top' || y <= Math.min(x, dx, dy)) {
     // snap to top
     return [x, min_y, 'top']
-  } else if (default_snap == 'right' || dx <= Math.min(x, y, dy)) {
+  } else if (default_snap === 'right' || dx <= Math.min(x, y, dy)) {
     // snap to right
     return [max_x, y, 'right']
   } else {
@@ -2215,7 +2215,7 @@ function isDiceAtBorder() {
   let x = null
   let y = null
 
-  if (event.type == 'touchmove') {
+  if (event.type === 'touchmove') {
     // dragging dice on mobile
     x = event.touches[0].clientX
     y = event.touches[0].clientY
@@ -2243,7 +2243,7 @@ function onDragDice(event) {
   // NOTE: moving dice icons around is currently disabled to allow proper timer dice stuff
 
   /*
-    if (sides == 2 || isDiceAtBorder()) {
+    if (sides === 2 || isDiceAtBorder()) {
     */
   /*
     var min_x = 0;
@@ -2256,7 +2256,7 @@ function onDragDice(event) {
     if (!is_over_scene || isDiceAtBorder()) {
         console.log('outside while drag');
         //localStorage.setItem('drag_timer', '0');
-        
+
         // move die around edge
         var p = pickScreenPos(event);
 
@@ -2274,7 +2274,7 @@ function onDragDice(event) {
         // apply position
         moveDiceTo(data, sides);
         saveDicePos(sides, data);
-        
+
     }  */
 }
 
@@ -2306,7 +2306,7 @@ function onDragMusic(event) {
     var x = Math.max(0, Math.min(window.innerWidth - 2 * w, p[0]));
     var y = Math.max(h/2, Math.min(window.innerHeight - h/2,  p[1]));
     var pos = [x, y];
-    
+
     moveMusicTo(pos);
     saveMusicPos(pos);
 }
@@ -2332,7 +2332,7 @@ function onMouseLeavePlayer(uuid) {
 function onWheelPlayers() {
   const direction = -Math.sign(event.deltaY)
 
-  if (direction != 0) {
+  if (direction !== 0) {
     writeSocket({
       OPID: 'ORDER',
       name: players[over_player].name,
@@ -2343,7 +2343,7 @@ function onWheelPlayers() {
 
 /// Event handle for moving a player
 function onPlayerOrder(direction) {
-  if (over_player != null) {
+  if (over_player !== null) {
     writeSocket({
       OPID: 'ORDER',
       name: players[over_player].name,
@@ -2392,7 +2392,7 @@ function onWindowResize(event) {
 /// Load dice position from local storage, returns absolute position
 function loadDicePos(sides) {
   const raw = localStorage.getItem('d' + sides)
-  if (raw == null) {
+  if (raw === null) {
     // use default position
     return default_dice_pos[sides]
   }
@@ -2418,7 +2418,7 @@ function saveDicePos(sides, data) {
 /// Load players position from local storage, returns absolute position
 function loadPlayersPos() {
   const raw = localStorage.getItem('players')
-  if (raw == null) {
+  if (raw === null) {
     // default position: bottom center
     const target = $('#players')
     return [window.innerWidth * 0.5, window.innerHeight - target.height()]

@@ -35,7 +35,7 @@ function onSocketMessage(event) {
   const data = JSON.parse(event.data)
   const opid = data.OPID
 
-  if (!quiet && opid != 'PING') {
+  if (!quiet && opid !== 'PING') {
     console.info('READ', data)
   }
 
@@ -97,7 +97,7 @@ function onAccept(data) {
       details.flag,
       details.index
     )
-    p.is_last = p.index == data.players.length - 1
+    p.is_last = p.index === data.players.length - 1
     showPlayer(p)
   })
 
@@ -115,7 +115,7 @@ function onAccept(data) {
   $.each(data.slots, function (i, slot) {
     addMusicSlot(slot)
   })
-  if (data.playback != null) {
+  if (data.playback !== null) {
     playMusicSlot(data.playback)
   }
 
@@ -128,7 +128,7 @@ function onUpdate(data) {
   $.each(data.tokens, function (index, token) {
     updateToken(token)
 
-    if (token.id == primary_id) {
+    if (token.id === primary_id) {
       is_primary = true
     }
   })
@@ -182,7 +182,7 @@ function onSelect(data) {
   player_selections[data.color] = data.selected
 
   // update my selection if it's me
-  if (data.color == my_color) {
+  if (data.color === my_color) {
     select_ids = data.selected
 
     if (!select_ids.includes(primary_id)) {
@@ -190,7 +190,7 @@ function onSelect(data) {
     }
 
     /*
-        // update primary id 
+        // update primary id
         if (select_ids.includes(primary_id)) {
             // reselect primary item (previous one does not belong to new selection)
             primary_id = data.selected[0];
@@ -208,7 +208,7 @@ function onSelect(data) {
 function onOrder(data) {
   $.each(data.indices, function (uuid, index) {
     players[uuid].index = index
-    players[uuid].is_last = index == Object.keys(data.indices).length - 1
+    players[uuid].is_last = index === Object.keys(data.indices).length - 1
   })
 
   rebuildPlayers()
@@ -217,7 +217,7 @@ function onOrder(data) {
 function onBeacon(data) {
   // grab beacon
   let beacon = beacons[data['uuid']]
-  if (beacon == null) {
+  if (beacon === null) {
     addBeacon(data['color'], data['uuid'])
     beacon = beacons[data['uuid']]
   }
@@ -244,7 +244,7 @@ function onMusic(data) {
 
     case 'add':
       $.each(data['slots'], function (index, slot) {
-        if (slot != null) {
+        if (slot !== null) {
           addMusicSlot(slot, data['update_id'])
         }
       })
@@ -275,7 +275,7 @@ function onRefresh(data) {
 /// Send data JSONified to server via the websocket
 function writeSocket(data) {
   const raw = JSON.stringify(data)
-  if (!quiet && data['OPID'] != 'PING') {
+  if (!quiet && data['OPID'] !== 'PING') {
     console.info('SEND', data)
   }
   socket.send(raw)
@@ -383,7 +383,7 @@ function login(event, gmname, url, websocket_url) {
       is_gm = response['is_gm']
       my_uuid = response['uuid']
 
-      if (error != '') {
+      if (error !== '') {
         showError(error)
 
         $('#playername').addClass('shake')

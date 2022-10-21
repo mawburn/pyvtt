@@ -177,7 +177,7 @@ function add32(a, b) {
   return (a + b) & 0xffffffff
 }
 
-if (md5('hello') != '5d41402abc4b2a76b9719d911017c592') {
+if (md5('hello') !== '5d41402abc4b2a76b9719d911017c592') {
   function add32(x, y) {
     const lsw = (x & 0xffff) + (y & 0xffff),
       msw = (x >> 16) + (y >> 16) + (lsw >> 16)

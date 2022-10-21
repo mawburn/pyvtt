@@ -19,7 +19,7 @@ function registerGm(event) {
     },
     success: function (response) {
       // wait for sanizized gm url (as confirm)
-      if (response['url'] == null) {
+      if (response['url'] === null) {
         showError(response['error'])
 
         // shake input
@@ -71,7 +71,7 @@ function updateDays() {
   // refill days for selected month
   let options = ''
   for (let i = 1; i <= num_days; ++i) {
-    const selected = i == day ? ' selected' : ''
+    const selected = i === day ? ' selected' : ''
     const shown = i < 10 ? '0' + i : i
     options += '<option value="' + i + '"' + selected + '>' + shown + '</option>'
   }
@@ -120,7 +120,7 @@ function GmUploadDrop(event, url_regex, gm_url) {
   const queue = $('#uploadqueue')[0]
   queue.files = event.dataTransfer.files
   const sizes_ok = true
-  if (queue.files.length != 1) {
+  if (queue.files.length !== 1) {
     showError('USE A SINGLE FILE')
     return
   }
@@ -144,7 +144,7 @@ function GmUploadDrop(event, url_regex, gm_url) {
 function tryGameCreation(f, url_regex) {
   // test target game url
   const url = $('#url').val()
-  if (url != '') {
+  if (url !== '') {
     // check url via regex
     r = new RegExp(url_regex, 'g')
     if (!r.test(url)) {
@@ -283,7 +283,7 @@ function onDropNewBackground(scene_id) {
     queue.files = event.dataTransfer.files;
 
     // only accept a single file
-    if (queue.files.length != 1) {
+    if (queue.files.length !== 1) {
         showError('USE A SINGLE IMAGE');
         return;
     }
@@ -291,7 +291,7 @@ function onDropNewBackground(scene_id) {
 
     // only accept image file
     content = file.type.split('/')[0];
-    if (content != 'image') {
+    if (content !== 'image') {
         showError('USE A SINGLE IMAGE');
         return;
     }

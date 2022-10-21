@@ -29,7 +29,7 @@ function updateViewport() {
     viewport.newy = null
   }
 
-  if (viewport.newx == null || viewport.newy == null) {
+  if (viewport.newx === null || viewport.newy === null) {
     return
   }
 
@@ -88,7 +88,7 @@ const images = []
 let canvas_scale = 1.0 // saved scaling
 
 function resizeCanvas() {
-  if (canvas_ratio == null) {
+  if (canvas_ratio === null) {
     canvas_ratio = MAX_SCENE_HEIGHT / MAX_SCENE_WIDTH
   }
 
@@ -116,7 +116,7 @@ function resizeCanvas() {
 
   // force all token labels to be redrawn
   $.each(tokens, function (index, token) {
-    if (token != null) {
+    if (token !== null) {
       token.label_canvas = null
     }
   })
@@ -162,9 +162,9 @@ function getPixelData(token, x, y) {
 
   /*
     @NOTE: label seems to be rendered at the WRONG size -.-
-    * 
+    *
     // add labels if present to allow for token selection via label
-    if (token.label_canvas != null) {
+    if (token.label_canvas !== null) {
         var is_timer = token.text.startsWith('#');
         var left = -token.label_canvas.width/2;
         var top  = token.label_canvas.height/4;
@@ -174,7 +174,7 @@ function getPixelData(token, x, y) {
         }
         var scale = Math.sqrt(1/viewport.zoom) / 2.0;
 
-        mem_ctx.restore();  
+        mem_ctx.restore();
         mem_ctx.translate(dom_canvas.width / 2, dom_canvas.height / 2);
         mem_ctx.scale(scale, scale);
         mem_ctx.drawImage(token.label_canvas, left, top);
@@ -236,7 +236,7 @@ function animateBeacon(beacon) {
   }
 
   // create 2nd beacon (offset)
-  if (beacon.master && beacon.offset == null && beacon.alpha < 0.5) {
+  if (beacon.master && beacon.offset === null && beacon.alpha < 0.5) {
     beacon.offset = new Beacon(beacon.color)
     startBeacon(beacon.offset, beacon.x, beacon.y)
     // mark as slave (prevent continued recursion)
@@ -269,7 +269,7 @@ function drawBeacon(beacon) {
     context.restore()
   }
 
-  if (beacon.offset != null) {
+  if (beacon.offset !== null) {
     drawBeacon(beacon.offset)
   }
 
@@ -355,12 +355,12 @@ function getActualSize(token, maxw, maxh) {
 /// Update token data for the provided token (might create a new token)
 function updateToken(data, force = false) {
   // create token if necessary
-  if (tokens[data.id] == null) {
+  if (tokens[data.id] === null) {
     addToken(data.id, data.url)
   }
 
   // ignore position if this client moved it
-  let ignore = data.uuid == my_uuid
+  let ignore = data.uuid === my_uuid
   // drop ignore if no client side prediction is enabled
   if (ignore && !client_side_prediction) {
     ignore = false
@@ -384,7 +384,7 @@ function updateToken(data, force = false) {
   }
 
   tokens[data.id].zorder = data.zorder
-  if (tokens[data.id].size != data.size) {
+  if (tokens[data.id].size !== data.size) {
     // reset canvas for pre-drawn text
     tokens[data.id].label_canvas = null
     // reset canvas for pre-drawn token hue
@@ -394,7 +394,7 @@ function updateToken(data, force = false) {
   tokens[data.id].rotate = data.rotate
   tokens[data.id].flipx = data.flipx
   tokens[data.id].locked = data.locked
-  if (tokens[data.id].text != data.text || tokens[data.id].color != data.color) {
+  if (tokens[data.id].text !== data.text || tokens[data.id].color !== data.color) {
     // reset canvas for pre-drawn text
     tokens[data.id].label_canvas = null
     // reset canvas for pre-drawn token hue
@@ -410,7 +410,7 @@ function updateToken(data, force = false) {
     max_z = data.zorder
   }
 
-  if (data.size == -1) {
+  if (data.size === -1) {
     // align background image to center
     const canvas = $('#battlemap')
     tokens[data.id].posx = canvas[0].width / 2 / canvas_scale
@@ -430,7 +430,7 @@ let num_uploading = 0
 
 /// Handle uploading notifcation
 function notifyUploadStart(num_uploads = 1) {
-  if (num_uploading == 0) {
+  if (num_uploading === 0) {
     $('#assetsUploading')[0].innerHTML =
       '<img src="/static/loading.gif" class="icon" /> <img src="/static/top.png" class="icon" />'
   }
@@ -440,27 +440,27 @@ function notifyUploadStart(num_uploads = 1) {
 /// Handle upload finish
 function notifyUploadFinish(num_uploads = 1) {
   num_uploading -= num_uploads
-  if (num_uploading == 0) {
+  if (num_uploading === 0) {
     $('#assetsUploading')[0].innerHTML = ''
   }
 }
 
 /// Handle downloading notifcation
 function notifyDownload(url) {
-  if (num_downloading == 0) {
+  if (num_downloading === 0) {
     $('#assetsDownloading')[0].innerHTML =
       '<img src="/static/loading.gif" class="icon" /> <img src="/static/bottom.png" class="icon" >'
   }
   num_downloading += 1
   images[url].onload = function () {
     num_downloading -= 1
-    if (num_downloading == 0) {
+    if (num_downloading === 0) {
       $('#assetsDownloading')[0].innerHTML = ''
     }
   }
   images[url].onerror = function () {
     num_downloading -= 1
-    if (num_downloading == 0) {
+    if (num_downloading === 0) {
       $('#assetsDownloading')[0].innerHTML = ''
     }
     console.error('Unable to load ' + url)
@@ -469,7 +469,7 @@ function notifyDownload(url) {
 
 /// Start loading image into cache
 function loadImage(url) {
-  if (images[url] == null) {
+  if (images[url] === null) {
     if (!quiet) {
       console.info('Loading image ' + url)
     }
@@ -542,7 +542,7 @@ function drawToken(token, color, is_background) {
     )
   } else {
     // handle token spawn
-    if (tokens_added[token.id] != null) {
+    if (tokens_added[token.id] !== null) {
       var value = tokens_added[token.id]
       context.globalAlpha = value
       context.scale(5 - 4 * value, 5 - 4 * value)
@@ -564,7 +564,7 @@ function drawToken(token, color, is_background) {
         */
 
     // handle token despawn
-    if (tokens_removed[token.id] != null) {
+    if (tokens_removed[token.id] !== null) {
       var value = tokens_removed[token.id][1]
       context.globalAlpha = value
       context.scale(5 - 4 * value, 5 - 4 * value)
@@ -577,17 +577,17 @@ function drawToken(token, color, is_background) {
     }
 
     // handle selection
-    if (color != null) {
+    if (color !== null) {
       context.shadowColor = color
       context.shadowBlur = 25
     }
 
     const is_timer = token.text.startsWith('#')
 
-    /*if (token.hue_canvas == null && images[token.url].complete) {
-            if (token.text != null && is_timer) {
+    /*if (token.hue_canvas === null && images[token.url].complete) {
+            if (token.text !== null && is_timer) {
         */
-    if (token.text != null && is_timer && token.hue_canvas == null) {
+    if (token.text !== null && is_timer && token.hue_canvas === null) {
       // create buffer canvas sized like the token
       token.hue_canvas = document.createElement('canvas')
       token.hue_canvas.width = sizes[0] * viewport.zoom
@@ -608,7 +608,7 @@ function drawToken(token, color, is_background) {
     context.save()
     try {
       let img = images[token.url]
-      if (token.hue_canvas != null) {
+      if (token.hue_canvas !== null) {
         img = token.hue_canvas
       }
 
@@ -631,8 +631,8 @@ function drawToken(token, color, is_background) {
     context.restore()
 
     // draw token label
-    if (token.text != null) {
-      if (token.label_canvas == null) {
+    if (token.text !== null) {
+      if (token.label_canvas === null) {
         // determine optional fontsize and width
         let fontsize = (30 * canvas_scale) / Math.sqrt(Math.sqrt(viewport.zoom))
         if (is_timer) {
@@ -707,8 +707,8 @@ function drawScene() {
   culling = []
   let background = null
   $.each(tokens, function (index, token) {
-    if (token != null) {
-      if (token.size == -1) {
+    if (token !== null) {
+      if (token.size === -1) {
         background = token
       } else {
         culling.push(token)
@@ -740,7 +740,7 @@ function drawScene() {
   context.translate(-sizes[0] * rel_x, -sizes[1] * rel_y)
 
   // draw tokens
-  if (background != null) {
+  if (background !== null) {
     drawToken(background, null, true)
   }
   $.each(culling, function (index, token) {
@@ -750,7 +750,7 @@ function drawScene() {
         color = cl
       }
     })
-    if (color == null && select_ids.includes(token.id)) {
+    if (color === null && select_ids.includes(token.id)) {
       color = my_color
     }
     drawToken(token, color, false)
@@ -758,7 +758,7 @@ function drawScene() {
 
   // draw recently removed tokens (animated)
   $.each(tokens_removed, function (index, token) {
-    if (tokens_removed[index] != null) {
+    if (tokens_removed[index] !== null) {
       drawToken(tokens_removed[index][0], null, false)
     }
   })
@@ -771,7 +771,7 @@ function drawScene() {
   // reverse culling for top-to-bottom token searching
   culling.reverse()
 
-  if (select_from_x != null) {
+  if (select_from_x !== null) {
     // draw selection box
     var canvas = $('#battlemap')
     var context = canvas[0].getContext('2d')

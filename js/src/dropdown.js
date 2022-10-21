@@ -29,7 +29,7 @@ function openGmDropdown(force = false) {
 function closeGmDropdown(force = false) {
   const scenes = $('#gmdrop')
   const hint = $('#gmhint')
-  if (scenes != null) {
+  if (scenes !== null) {
     if (force || gm_dropdown) {
       scenes.animate(
         {

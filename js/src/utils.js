@@ -1,9 +1,9 @@
 function brightnessByColor(color) {
   var color = '' + color,
-    isHEX = color.indexOf('#') == 0,
-    isRGB = color.indexOf('rgb') == 0
+    isHEX = color.indexOf('#') === 0,
+    isRGB = color.indexOf('rgb') === 0
   if (isHEX) {
-    var m = color.substr(1).match(color.length == 7 ? /(\S{2})/g : /(\S{1})/g)
+    var m = color.substr(1).match(color.length === 7 ? /(\S{2})/g : /(\S{1})/g)
     if (m)
       var r = parseInt(m[0], 16),
         g = parseInt(m[1], 16),
@@ -27,7 +27,7 @@ function rgbToHsl(r, g, b) {
     s,
     l = (max + min) / 2
 
-  if (max == min) {
+  if (max === min) {
     h = s = 0 // achromatic
   } else {
     const d = max - min

@@ -8,14 +8,14 @@ function mobileUpload() {
 
   let error_msg = ''
   $.each(queue.files, function (index, file) {
-    if (error_msg != '') {
+    if (error_msg !== '') {
       return
     }
 
     error_msg = checkFile(file, index)
   })
 
-  if (error_msg != '') {
+  if (error_msg !== '') {
     showError(error_msg)
     return
   }
@@ -40,7 +40,7 @@ function mobileGmUpload(url_regex, gm_url) {
   const queue = $('#fileupload')[0]
 
   const sizes_ok = true
-  if (queue.files.length != 1) {
+  if (queue.files.length !== 1) {
     showError('USE A SINGLE FILE')
     return
   }

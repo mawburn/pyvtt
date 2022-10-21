@@ -16,7 +16,7 @@ function showPopup(msg, color, timeout, fadeout) {
   popup[0].innerHTML = msg
   popup.css('color', color)
   popup.fadeIn(100, 0.0)
-  if (timeout != null) {
+  if (timeout !== null) {
     popup.delay(timeout).fadeOut(fadeout, 0.0)
   }
 }
@@ -44,7 +44,7 @@ function showHint(event, msg) {
 }
 
 function showHintNow(event, msg) {
-  if (last_hint_target == null || !show_hints) {
+  if (last_hint_target === null || !show_hints) {
     return
   }
 
