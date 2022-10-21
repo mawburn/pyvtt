@@ -8,3 +8,4 @@ pyvenv.cfg
 pyvtt.doxygen
 README.md
 test
+node_modules

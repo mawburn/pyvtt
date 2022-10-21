@@ -8,7 +8,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "rimraf bulid && rollup -c",
+    "build": "rimraf bulid && NODE_ENV=production rollup -c",
     "lint:fix": "eslint --fix ./src/**/*.js",
     "lint:rollup": "eslint --fix ./rollup.config.js"
   },
@@ -25,15 +25,16 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-prettier": "^4.2.1",
+    "jquery": "3.3.1",
+    "normalize.css": "^8.0.1",
     "postcss": "^8.4.18",
     "prettier": "^2.7.1",
     "rimraf": "^3.0.2",
     "rollup": "^3.2.3",
-    "rollup-plugin-postcss": "^4.0.2"
-  },
-  "dependencies": {
-    "jquery": "3.3.1",
-    "normalize.css": "^8.0.1",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-node-globals": "^1.4.0",
+    "rollup-plugin-polyfill-node": "^0.10.2",
+    "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-terser": "^7.0.2"
   }
 }
