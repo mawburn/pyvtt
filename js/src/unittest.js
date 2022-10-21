@@ -6,5 +6,5 @@ License: MIT (see LICENSE for details)
 */
 
 function run_tests() {
-    console.log('OK, running tests');
+  console.log('OK, running tests')
 }
