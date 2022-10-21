@@ -1,5 +1,5 @@
 /// Settings for webcam usage
-const webcam_constraints = {
+const webcamConstraints = {
   audio: false,
   video: {
     width: 1600,
@@ -7,7 +7,7 @@ const webcam_constraints = {
   },
 }
 
-const screenshare_constraints = {
+const screenshareConstraints = {
   video: {
     cursor: 'never',
     logicalSurface: true,
@@ -19,7 +19,7 @@ function initWebcam() {
   closeDrawing()
 
   navigator.mediaDevices
-    .getUserMedia(webcam_constraints)
+    .getUserMedia(webcamConstraints)
     .then(function (stream) {
       onStreamReady(stream)
     })
@@ -34,7 +34,7 @@ function initScreenShare() {
   closeDrawing()
 
   navigator.mediaDevices
-    .getDisplayMedia(screenshare_constraints)
+    .getDisplayMedia(screenshareConstraints)
     .then(function (stream) {
       onStreamReady(stream)
     })
@@ -55,8 +55,8 @@ function onStreamReady(stream) {
 function onTakeSnapshot() {
   // apply video resolution to canvas
   const preview = $('#snapshot')[0]
-  preview.width = webcam_constraints.video.width
-  preview.height = webcam_constraints.video.height
+  preview.width = webcamConstraints.video.width
+  preview.height = webcamConstraints.video.height
 
   // draw video snapshot onto canvas
   const context = preview.getContext('2d')

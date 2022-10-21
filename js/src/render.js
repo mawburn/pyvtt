@@ -78,9 +78,9 @@ function displayZoom() {
   }
 }
 
-var interpolation_speed = 25 // speed for interpolating between two positions
+const interpolation_speed = 25 // speed for interpolating between two positions
 
-var canvas_ratio = null // aspect ratio
+const canvas_ratio = null // aspect ratio
 
 // --- image handling implementation ----------------------------------
 
@@ -134,7 +134,7 @@ function clearCanvas() {
   context.restore()
 }
 
-var mem_canvas = null
+const mem_canvas = null
 
 /// Get image pixel data
 function getPixelData(token, x, y) {
@@ -279,7 +279,7 @@ function drawBeacon(beacon) {
 
 // --- token implementation -------------------------------------------
 
-var tokens = [] // holds all tokens, updated by the server
+const tokens = [] // holds all tokens, updated by the server
 const tokens_added = [] // holds token id => opacity when recently added
 const tokens_removed = [] // holds token id => (token, opacity) when recently removed
 
@@ -543,7 +543,7 @@ function drawToken(token, color, is_background) {
   } else {
     // handle token spawn
     if (tokens_added[token.id] !== null) {
-      var value = tokens_added[token.id]
+      const value = tokens_added[token.id]
       context.globalAlpha = value
       context.scale(5 - 4 * value, 5 - 4 * value)
       value += 0.075
@@ -565,7 +565,7 @@ function drawToken(token, color, is_background) {
 
     // handle token despawn
     if (tokens_removed[token.id] !== null) {
-      var value = tokens_removed[token.id][1]
+      let value = tokens_removed[token.id][1]
       context.globalAlpha = value
       context.scale(5 - 4 * value, 5 - 4 * value)
       value -= 0.075
@@ -594,7 +594,7 @@ function drawToken(token, color, is_background) {
       token.hue_canvas.height = sizes[1] * viewport.zoom
 
       // rotate token's hue if used as timer-token
-      var ctx = token.hue_canvas.getContext('2d')
+      const ctx = token.hue_canvas.getContext('2d')
       const hsl = getHsl(token.color)
       ctx.filter =
         'hue-rotate(' + hsl[0] + 'turn) saturate(' + hsl[1] + ') brightness(' + 2 * hsl[2] + ')'
@@ -721,8 +721,8 @@ function drawScene() {
     return a.zorder - b.zorder
   })
 
-  var canvas = $('#battlemap')
-  var context = canvas[0].getContext('2d')
+  let canvas = $('#battlemap')
+  let context = canvas[0].getContext('2d')
   const sizes = [canvas[0].width, canvas[0].height]
 
   context.save()
@@ -773,8 +773,8 @@ function drawScene() {
 
   if (select_from_x !== null) {
     // draw selection box
-    var canvas = $('#battlemap')
-    var context = canvas[0].getContext('2d')
+    canvas = $('#battlemap')
+    context = canvas[0].getContext('2d')
     const select_width = mouse_x - select_from_x
     const select_height = mouse_y - select_from_y
 

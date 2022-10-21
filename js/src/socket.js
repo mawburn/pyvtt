@@ -319,14 +319,14 @@ function onCountdown(hexstamp) {
 
   // calculate time difference
   const now = new Date()
-  var s = parseInt((date - now) / 1000)
+  const s = parseInt((date - now) / 1000)
   if (s > 0) {
-    var m = parseInt(s / 60)
-    var s = s % 60
-    var h = parseInt(m / 60)
-    var m = m % 60
+    let m = parseInt(s / 60)
+    const s = s % 60
+    let h = parseInt(m / 60)
+    m = m % 60
     const d = parseInt(h / 24)
-    var h = h % 24
+    h = h % 24
 
     s = s < 10 ? '0' + s : s
     m = m < 10 ? '0' + m : m

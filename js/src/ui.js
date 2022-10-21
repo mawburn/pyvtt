@@ -840,7 +840,7 @@ function updateTokenbar() {
     const padding = 20
 
     const icons = [token_icons]
-    var isInt = token.text.startsWith('#') || (!isNaN(token.text) && token.text !== '')
+    const isInt = token.text.startsWith('#') || (!isNaN(token.text) && token.text !== '')
 
     if (isInt) {
       icons.push(['LabelInc', 'LabelDec'])
@@ -904,7 +904,7 @@ function updateTokenbar() {
       $('#tokenDelete').css('visibility', '')
       $('#tokenLabel').css('visibility', '')
 
-      var isInt = token.text.startsWith('#') || (!isNaN(token.text) && token.text !== '')
+      const isInt = token.text.startsWith('#') || (!isNaN(token.text) && token.text !== '')
 
       if (isInt) {
         $('#tokenLabelDec').css('visibility', '')
@@ -923,14 +923,10 @@ function updateTokenbar() {
 function pickScreenPos(event) {
   if ((event.type === 'touchstart' || event.type === 'touchmove') && event.touches.length === 1) {
     const touchobj = event.touches[0]
-    var x = touchobj.clientX
-    var y = touchobj.clientY
-  } else {
-    var x = event.clientX
-    var y = event.clientY
+    return [touchobj.clientX, touchobj.clientY]
   }
 
-  return [x, y]
+  return [event.clientX, event.clientY]
 }
 
 let mouse_delta_x = 0
@@ -1365,8 +1361,8 @@ function onMove(event) {
     } else if (is_single_touch) {
       if (isExtremeForce(touch_force)) {
         // only handle hard pressure (finger) as movement
-        var dx = mouse_x - touch_start[0]
-        var dy = mouse_y - touch_start[1]
+        let dx = mouse_x - touch_start[0]
+        let dy = mouse_y - touch_start[1]
         dx *= 3 / viewport.zoom
         dy *= 3 / viewport.zoom
         // @NOTE: move against drag direction
@@ -1376,8 +1372,8 @@ function onMove(event) {
   } else if (event.buttons === 4 || (event.buttons === 1 && space_bar)) {
     // handle wheel click or leftclick (with space bar)
     // @NOTE: move against drag direction
-    var dx = -event.movementX / viewport.zoom
-    var dy = -event.movementY / viewport.zoom
+    const dx = -event.movementX / viewport.zoom
+    const dy = -event.movementY / viewport.zoom
     onMoveViewport(dx, dy)
   } else {
     // handle token mouse over
@@ -1395,7 +1391,7 @@ function onMove(event) {
   }
 }
 
-var pinch_distance = null
+let pinch_distance = null
 
 /// Calculate distance between fingers during pinch (two fingers)
 function calcPinchDistance() {
@@ -1836,11 +1832,8 @@ function onLabelStep(delta) {
     const prev = token.text
 
     // click token's number
-    if (isTimer) {
-      var number = parseInt(token.text.substr(1))
-    } else {
-      var number = parseInt(token.text)
-    }
+    let number = parseInt(isTimer ? token.text.substr(1) : token.text)
+
     number += delta
     if (number <= 0) {
       number = 0
@@ -2037,9 +2030,9 @@ function onEndDragDice(event) {
       return
     }
     const key = sides + '_' + my_name
-    var r = sides // fallback
+    let r = sides // fallback
     if (key in roll_history) {
-      var r = roll_history[key]
+      r = roll_history[key]
     }
 
     // add timer
@@ -2150,11 +2143,11 @@ function resetDicePos(sides) {
 }
 
 function moveDiceTo(data, sides) {
-  var icon = $('#d' + sides + 'icon')
+  let icon = $('#d' + sides + 'icon')
   const rolls = $('#d' + sides + 'rolls')
 
   // change position
-  var icon = $('#d' + sides + 'icon')
+  icon = $('#d' + sides + 'icon')
   icon.css('left', data[0])
   icon.css('top', data[1])
 
@@ -2379,8 +2372,8 @@ function onWindowResize(event) {
   }
 
   // apply dice positions
-  $.each(default_dice_pos, function (sides, data) {
-    var data = loadDicePos(sides)
+  $.each(default_dice_pos, (sides, data) => {
+    data = loadDicePos(sides)
     moveDiceTo(data, sides)
   })
 
