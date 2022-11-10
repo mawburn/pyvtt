@@ -64,7 +64,7 @@ class Engine(object):
         self.main_db = None
         
         # blacklist for GM names and game URLs
-        self.gm_blacklist = ['', 'static', 'token', 'music', 'vtt', 'websocket', 'thumbnail']
+        self.gm_blacklist = ['', 'static', 'asset', 'vtt', 'game']
         self.url_regex    = '^[A-Za-z0-9_\-.]+$'
         
         # maximum file sizes for uploads (in MB)
@@ -97,7 +97,6 @@ class Engine(object):
         self.local_gm  = '--local-gm' in argv
         self.localhost = '--localhost' in argv
         self.no_logs   = '--no-logs' in argv
-        self.resource_routing = '--no-resource-routing' not in argv
         
         if self.localhost:
             assert(not self.local_gm)
@@ -108,7 +107,7 @@ class Engine(object):
             error_file   = self.paths.getLogPath('error'),
             access_file  = self.paths.getLogPath('access'),
             warning_file = self.paths.getLogPath('warning'),
-            stats_file   = self.paths.getLogPath('stats'),
+            logins_file  = self.paths.getLogPath('logins'),
             auth_file    = self.paths.getLogPath('auth'),
             stdout_only  = self.no_logs,
             loglevel     = self.log_level
@@ -284,7 +283,7 @@ class Engine(object):
     def getWebsocketUrl(self):
         protocol = 'wss' if self.hasReverseProxy() or self.hasSsl() else 'ws'
         port     = '' if self.hasReverseProxy() else f':{self.getPort()}'
-        return f'{protocol}://{self.getDomain()}{port}/websocket'
+        return f'{protocol}://{self.getDomain()}{port}/vtt/websocket'
 
     def getAuthCallbackUrl(self):
         protocol = 'https' if self.hasReverseProxy() or self.hasSsl() else 'http'
@@ -332,7 +331,28 @@ class Engine(object):
         except requests.exceptions.ReadTimeout as e:
             self.logging.warning('Cannot query server\'s ip')
             return 'localhost'
+
+    def parseLoginLog(self):
+
+        class LoginRecord(object):
+            def __init__(self, is_gm, timeid, country, ip, num_players):
+                self.is_gm       = is_gm
+                self.timeid      = timeid
+                self.country     = country
+                self.ip          = ip
+                self.num_players = num_players
         
+        records = list()
+        with open(self.paths.getLogPath('logins'), 'r') as h:
+            content = h.read()
+            for line in content.split('\n'):
+                if line == '':
+                    continue
+                args = json.loads(line)
+                records.append(LoginRecord(*args))
+        return records
+
+    
     @staticmethod
     def getMd5(handle):
         hash_md5 = hashlib.md5()

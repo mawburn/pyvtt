@@ -24,7 +24,7 @@ class LoggingApiTest(unittest.TestCase):
             error_file   = self.root / 'error.log',
             access_file  = self.root / 'access.log',
             warning_file = self.root / 'warning.log',
-            stats_file   = self.root / 'stats.log',
+            logins_file  = self.root / 'logins.log',
             auth_file    = self.root / 'auth.log'
         )
         
@@ -59,14 +59,13 @@ class LoggingApiTest(unittest.TestCase):
         self.logging.warning('hello warning world')
         self.assertLastLine('warning', 'hello warning world')
         
-    def test_stats(self):
-        self.logging.stats('hello stats world')
-        self.assertLastLine('stats', 'hello stats world')
-    
-    def test_auth(self):
+    def test_logins(self):           
         data = {'id': '123', 'username': 'foobar'}
-        self.logging.auth(data)
-        self.assertLastLine('auth', str(data))
+        self.logging.logins(data)
+        self.assertLastLine('logins', str(data))
+    
+    def test_auth(self):              
+        self.logging.auth('hello stats world')
 
     def test_stdout_only(self):
         # NOTE: manual setUp to make sure logs are cleared
@@ -81,7 +80,7 @@ class LoggingApiTest(unittest.TestCase):
             error_file   = self.root / 'error.log',
             access_file  = self.root / 'access.log',
             warning_file = self.root / 'warning.log',
-            stats_file   = self.root / 'stats.log',
+            logins_file  = self.root / 'logins.log',
             auth_file    = self.root / 'auth.log',
             stdout_only  = True
         )
@@ -99,9 +98,12 @@ class LoggingApiTest(unittest.TestCase):
         self.logging.warning('hello warning world')
         self.assertFileNotFound('warning')
 
-        # stats log is not empty due to dependency to `stats.py`
-        self.logging.stats('hello stats world')
+        self.logging.auth('hello stats world')
+        self.assertFileNotFound('auth')
+        
+        # stats log is not empty due to analysis stuff
         data = {'id': '123', 'username': 'foobar'}
-        self.logging.auth(data)
-        self.assertLastLine('auth', str(data))
+        self.logging.logins(data)
+        self.assertLastLine('logins', str(data))
+
 

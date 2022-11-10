@@ -148,6 +148,14 @@ def setup_gm_routes(engine):
         status['url'] = gm.url
         return status
 
+    @get('/vtt/logout')
+    def vtt_logout():  
+        url = engine.login_api.getLogoutUrl()
+        # remove cookie
+        response.set_cookie('session', '', path='/', max_age=1, secure=engine.hasSsl())
+        # redirect to external logout
+        redirect(url)
+
     @get('/')
     @view('gm')
     def get_game_list():
@@ -278,7 +286,7 @@ def setup_gm_routes(engine):
         else:
             engine.logging.access('Game {0} created from "{1}" by {2}'.format(game.getUrl(), fname, engine.getClientIp(request)))
         
-        status['url'] = game.getUrl();
+        status['url'] = f'game/{game.getUrl()}';
         
         return status
 
@@ -395,28 +403,35 @@ def setup_gm_routes(engine):
             server = engine.getUrl()
         
         return dict(gm=gm, server=server, all_games=all_games)
-
-    # NOTE: THIS IS NOT USED YET SINCE THE CLIENT IS NOT USING MD5 HASHS YET
-    @get('/vtt/query-url/<gmurl>/<url>/<md5>')
-    def query_url_by_md5(gmurl, url, md5):
+    
+    @post('/vtt/hashtest/<gmurl>/<url>')
+    def post_image_hashtest(gmurl, url):
         # load GM from cache
         gm_cache = engine.cache.getFromUrl(gmurl)
         if gm_cache is None:
-            engine.logging.warning('GM url="{0}" tried to query image url by md5 at the game {1} by {2} but he was not inside the cache'.format(gmurl, url, engine.getClientIp(request)))
+            abort(404)
+
+        # loda game from cache
+        game_cache = gm_cache.getFromUrl(url)
+        if game_cache is None:
             abort(404)
         
-        # load game from GM's database
+        # load game from GM's database to upload files
         game = gm_cache.db.Game.select(lambda g: g.url == url).first()
-        if game is None:           
-            engine.logging.warning('GM url="{0}" tried to query image url by md5 at the game {1} by {2} but game was not found'.format(gmurl, url, engine.getClientIp(request)))
+        if game is None:  
             abort(404)
 
-        # query id by md5
-        queried_id = game.getIdByMd5(md5)
-        if queried_id is not None:
-            return game.getImageUrl(queried_id)
+        # query urls for given md5 hashes
+        known_urls = list()
+        for md5 in request.forms.getall('hashs[]'):
+            if md5 is not None:
+                imgid = game.getIdByMd5(md5)
+            
+                if imgid is not None:
+                    url = game.getImageUrl(imgid)
+                    known_urls.append(url)
 
-        return None
+        return {'urls': known_urls}
 
     @post('/vtt/upload-background/<gmurl>/<url>')
     def post_set_background(gmurl, url):
@@ -491,32 +506,139 @@ def setup_gm_routes(engine):
             abort(404)
         
         return dict(engine=engine, game=game)
+    
+    @get('/vtt/api/users')
+    def api_query_users():
+        now = time.time()
 
-    @get('/vtt/status')
-    def status_report():
-        if len(engine.shards) == 0:
+        # query gms
+        total_gms     = engine.main_db.GM.select().count()
+        abandoned_gms = engine.main_db.GM.select(lambda g: g.timeid < now - engine.expire).count()
+
+        # query games
+        threshold     = 10
+        total_games   = 0
+        running_games = 0
+        with engine.cache.lock:
+            for gm in engine.cache.gms:
+                gm_cache = engine.cache.gms[gm]
+                with gm_cache.lock:
+                    total_games   += gm_cache.db.Game.select().count()
+                    running_games += gm_cache.db.Game.select(lambda g: g.timeid >= now - threshold * 60).count()
+        done = time.time()
+
+        # return data
+        return {
+            'gms': {
+                'total': total_gms,
+                'abandoned': abandoned_gms
+            },
+            'games': {
+                'total': total_games,
+                'running': running_games
+            },
+            'query_time': done-now
+        }
+
+    @get('/vtt/api/games-list/<gmurl>')
+    def api_games_list(gmurl):
+        start = time.time()
+        
+        # load GM from cache
+        gm_cache = engine.cache.getFromUrl(gmurl)
+        if gm_cache is None:
+            # @NOTE: not logged because somebody may play around with this
             abort(404)
 
-        # @NOTE: this needs to be rewritten, since there's no `ps` in slim containres
-        pid = os.getpid()
-        data = dict()
+        data = {
+            'games': []
+        }
+        for game in gm_cache.db.Game.select():
+            data['games'].append(game.url)
+        done = time.time()
 
-        """
-        # query cpu load
-        ret = subprocess.run(["ps", "-p", str(pid), "-o", "%cpu"], capture_output=True)
-        val = ret.stdout.decode('utf-8').split('\n')[1].strip()
-        data['cpu'] = float(val)
-        
-        # query memory load
-        ret = subprocess.run(["ps", "-p", str(pid), "-o", "%mem"], capture_output=True)
-        val = ret.stdout.decode('utf-8').split('\n')[1].strip()
-        data['memory'] = float(val)
-        """
-        
-        # query number of players
-        data['num_players'] = PlayerCache.instance_count
-        
+        data['query_time'] = done - start
         return data
+
+    @get('/vtt/api/assets-list/<gmurl>/<url>')
+    def api_asset_list(gmurl, url):
+        start = time.time()
+        
+        # load GM from cache
+        gm_cache = engine.cache.getFromUrl(gmurl)
+        if gm_cache is None:
+            # @NOTE: not logged because somebody may play around with this
+            abort(404)
+        
+        # load game from GM's database
+        game = gm_cache.db.Game.select(lambda g: g.url == url).first()
+        if game is None:
+            # @NOTE: not logged because somebody may play around with this
+            abort(404)
+        
+        root = engine.paths.getGamePath(gmurl, url)
+        files = {
+            'images': [],
+            'audio': []
+        }
+        for fname in os.listdir(root):
+            if fname.endswith('.png'):
+                files['images'].append(fname)
+            if fname.endswith('.mp3'):
+                files['audio'].append(fname)
+        files['images'].sort(key=lambda k: int(k.split('.')[0]))
+        files['audio'].sort()
+        done = time.time()
+
+        files['query_time'] = done-start
+
+        return files
+
+    @get('/vtt/api/logins')
+    def api_query_logins():
+        """Count users locations based on IPs within past 30d."""
+        start = time.time()
+        
+        logins    = engine.parseLoginLog()
+        locations  = dict()
+        since = start - 30 * 24 * 3600 # past 30d
+
+        # group IPs by country
+        for record in logins:
+            if record.timeid < since:
+                continue
+            if record.country not in locations:
+                locations[record.country] = set()
+            locations[record.country].add(record.ip)
+
+        # count IPs per country
+        for key in locations:
+            locations[key] = len(locations[key])
+        
+        done = time.time()
+
+        return {
+            'locations': locations,
+            'query_time': done-start
+        }
+    
+    if engine.login['type'] == 'auth0':
+        @get('/vtt/api/auth0')
+        def api_query_auth0():
+            # query gms and how many accounts do idle
+            now   = time.time()
+            total = 0
+            provider = {}
+            for gm in engine.main_db.GM.select():
+                print(gm.url)
+                p = engine.login_api.parseProvider(gm.url)
+                if p not in provider:
+                    provider[p] = 0
+                provider[p] += 1
+            done = time.time()
+
+            provider['query_time'] = done-now
+            return provider
 
     @get('/vtt/query/<index:int>')
     def status_query(index):
@@ -541,7 +663,7 @@ def setup_gm_routes(engine):
         
         # query server status
         try:
-            html = requests.get(host + '/vtt/status', timeout=3)
+            html = requests.get(host + '/vtt/api/users', timeout=3)
             data['status'] = html.text;
         except requests.exceptions.ReadTimeout as e:
             engine.logging.error('Server {0} seems to be offline'.format(host))
@@ -563,11 +685,6 @@ def setup_gm_routes(engine):
 
 def setup_resource_routes(engine):
     
-    if not engine.resource_routing:
-        # skip resource routing
-        engine.logging.info('Resource routes were skipped')
-        return
-    
     @get('/static/<fname>')
     def static_files(fname):
         root = engine.paths.getStaticPath()
@@ -579,8 +696,8 @@ def setup_resource_routes(engine):
 
         return static_file(fname, root=root)
 
-    @get('/music/<gmurl>/<url>/<fname>')
-    def game_music(gmurl, url, fname):
+    @get('/asset/<gmurl>/<url>/<fname>')
+    def game_asset(gmurl, url, fname):
         # load GM from cache
         gm_cache = engine.cache.getFromUrl(gmurl)
         if gm_cache is None:
@@ -592,39 +709,20 @@ def setup_resource_routes(engine):
         if game is None:
             # @NOTE: not logged because somebody may play around with this
             abort(404)
+
+        # only allow specific file types
+        if not fname.endswith('.png') and not fname.endswith('.mp3'):
+            abort(404)
         
-        # try to load music from disk
+        # try to load asset file from disk
         root  = engine.paths.getGamePath(gmurl, url)
         return static_file(fname, root)
-
-    @get('/token/<gmurl>/<url>/<fname>')
-    def static_token(gmurl, url, fname):
-        # load GM from cache
-        gm_cache = engine.cache.getFromUrl(gmurl)
-        if gm_cache is None:
-            # @NOTE: not logged because somebody may play around with this
-            abort(404)
-        
-        # load game from GM's database
-        game = gm_cache.db.Game.select(lambda g: g.url == url).first()
-        if game is None:
-            # @NOTE: not logged because somebody may play around with this
-            abort(404)
-        
-        # fetch image path
-        path = engine.paths.getGamePath(gmurl, url)
-
-        # check file extension (just in case more files will be added there in future)
-        if not fname.endswith('.png'):
-            abort(404)
-        
-        return static_file(fname, root=path)
 
 # ---------------------------------------------------------------------
 
 def setup_player_routes(engine):
 
-    @get('/thumbnail/<gmurl>/<url>/<scene_id:int>')
+    @get('/vtt/thumbnail/<gmurl>/<url>/<scene_id:int>')
     def get_scene_thumbnail(gmurl, url, scene_id):
         # load GM from cache
         gm_cache = engine.cache.getFromUrl(gmurl)
@@ -646,7 +744,7 @@ def setup_player_routes(engine):
 
         redirect(url)
 
-    @get('/thumbnail/<gmurl>/<url>')
+    @get('/vtt/thumbnail/<gmurl>/<url>')
     def get_game_thumbnail(gmurl, url):
         # load GM from cache
         gm_cache = engine.cache.getFromUrl(gmurl)
@@ -660,22 +758,29 @@ def setup_player_routes(engine):
             # @NOTE: not logged because somebody may play around with this
             abort(404)
 
-        redirect('/thumbnail/{0}/{1}/{2}'.format(gmurl, url, game.active))
+        redirect('/vtt/thumbnail/{0}/{1}/{2}'.format(gmurl, url, game.active))
 
-    @get('/<gmurl>/<url>')
-    @get('/<gmurl>/<url>/<timestamp>')
+    @get('/vtt/schedule/<timestamp>')
+    @view('countdown')
+    def vtt_countdown(timestamp):
+        return dict(engine=engine, timestamp=timestamp)
+
+    @get('/game/<gmurl>/<url>')
+    @get('/game/<gmurl>/<url>/<timestamp>')
     @view('battlemap')
     def get_player_battlemap(gmurl, url, timestamp=None):
+        gm = engine.main_db.GM.loadFromSession(request)
+        
         # try to load playername from cookie (or from GM name)
         playername = request.get_cookie('playername', default='')
         
         # query whether user is the hosting GM
-        session_gm = engine.main_db.GM.loadFromSession(request)
-        gm_is_host = session_gm is not None and session_gm.url == gmurl
+        session_gm   = engine.main_db.GM.loadFromSession(request)
+        you_are_host = session_gm is not None and session_gm.url == gmurl
         
         # query gm of that game
-        gm = engine.main_db.GM.select(lambda gm: gm.url == gmurl).first()
-        if gm is None:
+        host = engine.main_db.GM.select(lambda gm: gm.url == gmurl).first()
+        if host is None:
             abort(404)
         
         # try to load playercolor from cookieplayercolor = request.get_cookie('playercolor')
@@ -702,9 +807,9 @@ def setup_player_routes(engine):
         supported_dice.reverse()
         
         # show battlemap with login screen ontop
-        return dict(engine=engine, websocket_url=websocket_url, game=game, playername=playername, playercolor=playercolor, gm=gm, is_gm=gm_is_host, dice=supported_dice, timestamp=timestamp)
+        return dict(engine=engine, websocket_url=websocket_url, game=game, playername=playername, playercolor=playercolor, host=host, gm=gm, dice=supported_dice, timestamp=timestamp)
 
-    @post('/<gmurl>/<url>/login')
+    @post('/game/<gmurl>/<url>/login')
     def set_player_name(gmurl, url):
         result = {
             'uuid'        : '',
@@ -784,7 +889,7 @@ def setup_player_routes(engine):
         result['is_gm']       = player_cache.is_gm
         return result
 
-    @get('/websocket')
+    @get('/vtt/websocket')
     def accept_websocket():
         socket = request.environ.get('wsgi.websocket')
         
@@ -802,36 +907,7 @@ def setup_player_routes(engine):
                 # reraise greenlet's exception to trigger proper error reporting
                 raise error
 
-    @post('/<gmurl>/<url>/hashtest')
-    def get_image_hashtest(gmurl, url):
-        # load GM from cache
-        gm_cache = engine.cache.getFromUrl(gmurl)
-        if gm_cache is None:
-            abort(404)
-
-        # loda game from cache
-        game_cache = gm_cache.getFromUrl(url)
-        if game_cache is None:
-            abort(404)
-        
-        # load game from GM's database to upload files
-        game = gm_cache.db.Game.select(lambda g: g.url == url).first()
-        if game is None:  
-            abort(404)
-
-        # query urls for given md5 hashes
-        known_urls = list()
-        for md5 in request.forms.getall('hashs[]'):
-            if md5 is not None:
-                imgid = game.getIdByMd5(md5)
-            
-                if imgid is not None:
-                    url = game.getImageUrl(imgid)
-                    known_urls.append(url)
-
-        return {'urls': known_urls}
-
-    @post('/<gmurl>/<url>/upload')
+    @post('/game/<gmurl>/<url>/upload')
     def post_image_upload(gmurl, url):
         # load GM from cache
         gm_cache = engine.cache.getFromUrl(gmurl)

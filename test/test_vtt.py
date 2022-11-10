@@ -7,7 +7,7 @@ Copyright (c) 2020-2021 Christian Glöckner
 License: MIT (see LICENSE for details)
 """
 
-import tempfile, json, os, zipfile, gevent, requests, shutil
+import tempfile, json, os, zipfile, gevent, requests, shutil, hashlib
 
 from PIL import Image
 
@@ -82,7 +82,7 @@ class VttTest(EngineBaseTest):
     
     def joinPlayer(self, gm_url, game_url, playername, playercolor):
         # post login
-        ret = self.app.post('/{0}/{1}/login'.format(gm_url, game_url),
+        ret = self.app.post('/game/{0}/{1}/login'.format(gm_url, game_url),
             {'playername': playername, 'playercolor': playercolor})
         self.assertEqual(ret.status_int, 200)
         # open fake socket
@@ -238,9 +238,9 @@ class VttTest(EngineBaseTest):
         self.assertTrue(ret.json['url_ok'])
         self.assertTrue(ret.json['file_ok'])
         self.assertEqual(ret.json['error'], '')
-        self.assertEqual(len(ret.json['url'].split('/')), 2)
-        self.assertEqual(ret.json['url'].split('/')[0], 'arthur')
-        self.assertNotEqual(ret.json['url'].split('/')[1], 'arthur')
+        self.assertEqual(len(ret.json['url'].split('/')), 3)
+        self.assertEqual(ret.json['url'].split('/')[0], 'game')
+        self.assertEqual(ret.json['url'].split('/')[1], 'arthur')
         
         # can import image with custom url (ignoring cases)
         ret = self.app.post('/vtt/import-game/teSt-uRL-1',
@@ -250,8 +250,8 @@ class VttTest(EngineBaseTest):
         self.assertTrue(ret.json['url_ok'])
         self.assertTrue(ret.json['file_ok'])
         self.assertEqual(ret.json['error'], '')
-        self.assertEqual(ret.json['url'], 'arthur/test-url-1')
-        ret = self.app.get('/arthur/test-url-1')
+        self.assertEqual(ret.json['url'], 'game/arthur/test-url-1')
+        ret = self.app.get('/game/arthur/test-url-1')
         self.assertEqual(ret.status_int, 200)
         
         # cannot use custom url twice
@@ -271,8 +271,8 @@ class VttTest(EngineBaseTest):
         self.assertTrue(ret.json['url_ok'])
         self.assertTrue(ret.json['file_ok'])
         self.assertEqual(ret.json['error'], '')
-        self.assertEqual(ret.json['url'], 'arthur/test-url-1-but-this-time-with-')
-        ret = self.app.get('/arthur/test-url-1-but-this-time-with-')
+        self.assertEqual(ret.json['url'], 'game/arthur/test-url-1-but-this-time-with-')
+        ret = self.app.get('/game/arthur/test-url-1-but-this-time-with-')
         self.assertEqual(ret.status_int, 200)
         
         # cannot import image with invalid url
@@ -283,7 +283,7 @@ class VttTest(EngineBaseTest):
         self.assertEqual(ret.json['error'], 'NO SPECIAL CHARS OR SPACES')
         self.assertEqual(ret.json['url'], '')
         self.assertFalse(ret.json['url_ok'])   
-        ret = self.app.get('/arthur/test url-2', expect_errors=True)
+        ret = self.app.get('/game/arthur/test url-2', expect_errors=True)
         self.assertEqual(ret.status_int, 404)
         
         # cannot import multiple files at once
@@ -297,7 +297,7 @@ class VttTest(EngineBaseTest):
         self.assertTrue(ret.json['url_ok'])
         self.assertFalse(ret.json['file_ok'])
         self.assertEqual(ret.json['error'], 'ONE FILE AT ONCE')
-        ret = self.app.get('/arthur/test-url-3', expect_errors=True)
+        ret = self.app.get('/game/arthur/test-url-3', expect_errors=True)
         self.assertEqual(ret.status_int, 404)
         
         # can upload large background
@@ -308,8 +308,8 @@ class VttTest(EngineBaseTest):
         self.assertTrue(ret.json['url_ok'])
         self.assertTrue(ret.json['file_ok'])
         self.assertEqual(ret.json['error'], '')
-        self.assertEqual(ret.json['url'], 'arthur/test-url-4')
-        ret = self.app.get('/arthur/test-url-4')
+        self.assertEqual(ret.json['url'], 'game/arthur/test-url-4')
+        ret = self.app.get('/game/arthur/test-url-4')
         self.assertEqual(ret.status_int, 200)
             
         # cannot upload too large background
@@ -321,7 +321,7 @@ class VttTest(EngineBaseTest):
         self.assertFalse(ret.json['file_ok'])
         self.assertEqual(ret.json['error'], 'TOO LARGE BACKGROUND (MAX {0} MiB)'.format(self.engine.file_limit['background']))
         self.assertEqual(ret.json['url'], '')
-        ret = self.app.get('/arthur/test-url-5', expect_errors=True)
+        ret = self.app.get('/game/arthur/test-url-5', expect_errors=True)
         self.assertEqual(ret.status_int, 404)
         
         # cannot upload a fake zip file
@@ -333,7 +333,7 @@ class VttTest(EngineBaseTest):
         self.assertFalse(ret.json['file_ok'])
         self.assertEqual(ret.json['error'], 'CORRUPTED FILE')   
         self.assertEqual(ret.json['url'], '')
-        ret = self.app.get('/arthur/test-url-6', expect_errors=True)
+        ret = self.app.get('/game/arthur/test-url-6', expect_errors=True)
         self.assertEqual(ret.status_int, 404)
         
         # can upload zip file
@@ -344,7 +344,7 @@ class VttTest(EngineBaseTest):
         self.assertTrue(ret.json['url_ok'])
         self.assertTrue(ret.json['file_ok'])
         self.assertEqual(ret.json['error'], '')
-        ret = self.app.get('/arthur/test-url-7')
+        ret = self.app.get('/game/arthur/test-url-7')
         self.assertEqual(ret.status_int, 200)
         
         # cannot upload too large zip file
@@ -355,7 +355,7 @@ class VttTest(EngineBaseTest):
         self.assertTrue(ret.json['url_ok'])
         self.assertFalse(ret.json['file_ok'])
         self.assertEqual(ret.json['error'], 'TOO LARGE GAME (MAX {0} MiB)'.format(self.engine.file_limit['game']))
-        ret = self.app.get('/arthur/test-url-8', expect_errors=True)
+        ret = self.app.get('/game/arthur/test-url-8', expect_errors=True)
         self.assertEqual(ret.status_int, 404)
         
         # cannot upload any other file format
@@ -367,7 +367,7 @@ class VttTest(EngineBaseTest):
         self.assertFalse(ret.json['file_ok'])
         self.assertEqual(ret.json['error'], 'USE AN IMAGE FILE')
         self.assertEqual(ret.json['url'], '')  
-        ret = self.app.get('/arthur/test-url-9', expect_errors=True)
+        ret = self.app.get('/game/arthur/test-url-9', expect_errors=True)
         self.assertEqual(ret.status_int, 404)
 
     def test_exportgame(self):
@@ -385,7 +385,7 @@ class VttTest(EngineBaseTest):
         self.assertTrue(ret.json['url_ok'])
         self.assertTrue(ret.json['file_ok'])
         self.assertEqual(ret.json['error'], '')
-        self.assertEqual(ret.json['url'], 'arthur/test-exportgame-1')
+        self.assertEqual(ret.json['url'], 'game/arthur/test-exportgame-1')
 
         # register bob
         ret = self.app.post('/vtt/join', {'gmname': 'bob'}, xhr=True)
@@ -401,7 +401,7 @@ class VttTest(EngineBaseTest):
         self.assertTrue(ret.json['url_ok'])
         self.assertTrue(ret.json['file_ok'])
         self.assertEqual(ret.json['error'], '')
-        self.assertEqual(ret.json['url'], 'bob/this-one-is-bob')
+        self.assertEqual(ret.json['url'], 'game/bob/this-one-is-bob')
 
         # reset app to clear cookies
         self.app.reset()
@@ -464,7 +464,7 @@ class VttTest(EngineBaseTest):
         self.assertEqual(ret.status_int, 404)
 
         # upload some music
-        ret = self.app.post('/arthur/test-game-1/upload',
+        ret = self.app.post('/game/arthur/test-game-1/upload',
             upload_files=[('file[]', 'sample.mp3', b'')], xhr=True)
         
         # GM can cleanup his game
@@ -607,7 +607,7 @@ class VttTest(EngineBaseTest):
         ret = self.app.post('/vtt/query-scenes/test-game-1')
         self.assertEqual(ret.status_int, 200)
 
-    def test_vtt_queryurl(self):
+    def test_vtt_hashtest(self):
         # register arthur
         ret = self.app.post('/vtt/join', {'gmname': 'arthur'}, xhr=True)
         self.assertEqual(ret.status_int, 200)
@@ -620,32 +620,57 @@ class VttTest(EngineBaseTest):
         gm_sid = self.app.cookies['session']
         self.app.reset()
 
+        # fetch md5 hash from game's first image (= background)
+        md5 = list(self.engine.checksums['arthur/test-game-1'].keys())[0]
+        
         # create some scenes
         gm_ret, gm_player = self.joinPlayer('arthur', 'test-game-1', 'arthur', 'gold')
         for i in range(3):
             gm_player.socket.push_receive({'OPID': 'GM-CREATE'})
         
-        # non-GM can query for missing url
-        ret = self.app.get('/vtt/query-url/arthur/test-game-1/foobar', expect_errors=True)
+        # non-GM can hashtest for existing assets
+        ret = self.app.post('/vtt/hashtest/arthur/test-game-1', {'hashs[]': [md5]}, xhr=True)
         self.assertEqual(ret.status_int, 200)
-        self.assertEqual(ret.body, b'')
-    
-    def test_vtt_status(self):
-        # can query if no more shards were specified
-        ret = self.app.get('/vtt/status', expect_errors=True)
+        expect = {
+            "urls": ["/asset/arthur/test-game-1/0.png"]
+        }
+        self.assertEqual(ret.body, json.dumps(expect).encode('utf-8'))
+        
+        # non-GM can hashtest for missing assets
+        ret = self.app.post('/vtt/hashtest/arthur/test-game-1', {'hashs[]': ['deadbeef']}, xhr=True)
+        self.assertEqual(ret.status_int, 200)
+        expect = {"urls": []}
+        self.assertEqual(ret.body, json.dumps(expect).encode('utf-8'))
+
+    def test_vtt_api_queries(self):
+        ret = self.app.get('/vtt/api/users', expect_errors=True)
+        self.assertEqual(ret.status_int, 200)
+        
+        ret = self.app.get('/vtt/api/logins', expect_errors=True)
         self.assertEqual(ret.status_int, 200)
 
-        # can query if shard was set up
-        self.engine.shards = ['http://localhost:80']
-        ret = self.app.get('/vtt/status')
-        self.assertEqual(ret.status_int, 200)
-        # @NOTE: this needs to be rewritten, since there's no `ps` in slim containres
-        """
-        self.assertIn('cpu', ret.json)
-        self.assertIn('memory', ret.json)
-        """
-        self.assertIn('num_players', ret.json)
+        # auth0 analysis is not routed when not loaded
+        ret = self.app.get('/vtt/api/auth0', expect_errors=True)
+        self.assertEqual(ret.status_int, 404)
         
+        # register arthur
+        ret = self.app.post('/vtt/join', {'gmname': 'arthur'}, xhr=True)
+        self.assertEqual(ret.status_int, 200)
+        
+        # create a game 
+        img_small = makeImage(512, 512)
+        ret = self.app.post('/vtt/import-game/test-game-1',
+            upload_files=[('file', 'test.png', img_small)], xhr=True)
+        self.assertEqual(ret.status_int, 200)
+        gm_sid = self.app.cookies['session']
+        self.app.reset()
+        
+        ret = self.app.get('/vtt/api/games-list/arthur', expect_errors=True)
+        self.assertEqual(ret.status_int, 200)
+
+        ret = self.app.get('/vtt/api/assets-list/arthur/test-game-1', expect_errors=True)
+        self.assertEqual(ret.status_int, 200)
+    
     def test_vtt_query(self):
         # can only query this server if no shards are specified
         ret = self.app.get('/vtt/query/0', expect_errors=True)
@@ -768,44 +793,44 @@ class VttTest(EngineBaseTest):
         shutil.copyfile(img_path / '0.png', img_path / '1.png')
 
         # can query this image
-        ret = self.app.get('/token/arthur/test-game-1/0.png')
+        ret = self.app.get('/asset/arthur/test-game-1/0.png')
         self.assertEqual(ret.status_int, 200)
         self.assertEqual(ret.content_type, 'image/png')
-        ret = self.app.get('/token/arthur/test-game-1/1.png')
+        ret = self.app.get('/asset/arthur/test-game-1/1.png')
         self.assertEqual(ret.status_int, 200)
         self.assertEqual(ret.content_type, 'image/png')
 
         # cannot query unknown image (within right game)
-        ret = self.app.get('/token/arthur/test-game-2/2.png', expect_errors=True)
+        ret = self.app.get('/asset/arthur/test-game-2/2.png', expect_errors=True)
         self.assertEqual(ret.status_int, 404)
 
         # cannot query image from another game
-        ret = self.app.get('/token/arthur/test-game-2/0.png')
+        ret = self.app.get('/asset/arthur/test-game-2/0.png')
         self.assertEqual(ret.status_int, 200)
         self.assertEqual(ret.content_type, 'image/png')
         
         # cannot query image from unknown game
-        ret = self.app.get('/token/arthur/test-game-3/0.png', expect_errors=True)
+        ret = self.app.get('/asset/arthur/test-game-3/0.png', expect_errors=True)
         self.assertEqual(ret.status_int, 404)
         
         # cannot query image from unknown gm
-        ret = self.app.get('/token/carlos/test-game-3/0.png', expect_errors=True)
+        ret = self.app.get('/asset/carlos/test-game-3/0.png', expect_errors=True)
         self.assertEqual(ret.status_int, 404)
 
         # cannot query GM's database         
-        ret = self.app.get('/token/arthur/test-game-1/../gm.db', expect_errors=True)
+        ret = self.app.get('/asset/arthur/test-game-1/../gm.db', expect_errors=True)
         self.assertEqual(ret.status_int, 404)
-        ret = self.app.get('/token/arthur/test-game-1/../&#47;m.db', expect_errors=True)
+        ret = self.app.get('/asset/arthur/test-game-1/../&#47;m.db', expect_errors=True)
         self.assertEqual(ret.status_int, 404)
-        ret = self.app.get('/token/arthur/../gm.db', expect_errors=True)
+        ret = self.app.get('/asset/arthur/../gm.db', expect_errors=True)
         self.assertEqual(ret.status_int, 404)
-        ret = self.app.get('/token/arthur/test-game-1/"../gm.db"', expect_errors=True)
+        ret = self.app.get('/asset/arthur/test-game-1/"../gm.db"', expect_errors=True)
         self.assertEqual(ret.status_int, 404)
 
         # cannot query non-image files
         with open(img_path / 'test.txt', 'w') as h:
             h.write('hello world') 
-        ret = self.app.get('/token/arthur/test-game-1/test.txt', expect_errors=True)
+        ret = self.app.get('/asset/arthur/test-game-1/test.txt', expect_errors=True)
         self.assertEqual(ret.status_int, 404)
     
     def test_game_screen(self):
@@ -822,7 +847,7 @@ class VttTest(EngineBaseTest):
         self.app.reset()
 
         # can access login screen for existing game
-        ret = self.app.get('/arthur/test-game-1')
+        ret = self.app.get('/game/arthur/test-game-1')
         self.assertEqual(ret.status_int, 200)
         # expect GM dropdown NOT to be loaded
         self.assertNotIn('onClick="addScene();"', ret.unicode_normal_body)
@@ -837,7 +862,7 @@ class VttTest(EngineBaseTest):
 
         # can access as GM
         self.app.set_cookie('session', gm_sid)
-        ret = self.app.get('/arthur/test-game-1')
+        ret = self.app.get('/game/arthur/test-game-1')
         self.assertEqual(ret.status_int, 200)
         # expect GM dropdown to be loaded
         self.assertIn('onClick="addScene();"', ret.unicode_normal_body)
@@ -872,7 +897,7 @@ class VttTest(EngineBaseTest):
         self.assertEqual(ret2.json['playercolor'], 'blue')
 
         # player cannot login with the same name
-        ret = self.app.post('/arthur/test-game-1/login', {'playername': 'carlos', 'playercolor': 'blue'})
+        ret = self.app.post('/game/arthur/test-game-1/login', {'playername': 'carlos', 'playercolor': 'blue'})
         self.assertEqual(ret.status_int, 200)
         self.assertEqual(ret.json['uuid'], '')
         self.assertFalse(ret.json['is_gm'])
@@ -881,7 +906,7 @@ class VttTest(EngineBaseTest):
         self.assertEqual(ret.json['playercolor'], '')
         
         # player cannot name
-        ret = self.app.post('/arthur/test-game-1/login', {'playername': '', 'playercolor': 'blue'})
+        ret = self.app.post('/game/arthur/test-game-1/login', {'playername': '', 'playercolor': 'blue'})
         self.assertEqual(ret.status_int, 200)
         self.assertEqual(ret.json['uuid'], '')
         self.assertFalse(ret.json['is_gm'])
@@ -890,7 +915,7 @@ class VttTest(EngineBaseTest):
         self.assertEqual(ret.json['playercolor'], '')
         
         # player cannot login to unknown game
-        ret = self.app.post('/arthur/test-game-2/login', {'playername': 'dagmar', 'playercolor': 'black'})
+        ret = self.app.post('/game/arthur/test-game-2/login', {'playername': 'dagmar', 'playercolor': 'black'})
         self.assertEqual(ret.status_int, 200)
         self.assertEqual(ret.json['uuid'], '')
         self.assertFalse(ret.json['is_gm'])
@@ -899,7 +924,7 @@ class VttTest(EngineBaseTest):
         self.assertEqual(ret.json['playercolor'], '')
         
         # player cannot login to unknown GM's game
-        ret = self.app.post('/horatio/test-game-1/login', {'playername': 'dagmar', 'playercolor': 'black'})
+        ret = self.app.post('/game/horatio/test-game-1/login', {'playername': 'dagmar', 'playercolor': 'black'})
         self.assertEqual(ret.status_int, 200)
         self.assertEqual(ret.json['uuid'], '')
         self.assertFalse(ret.json['is_gm'])
@@ -1056,7 +1081,7 @@ class VttTest(EngineBaseTest):
         self.app.reset()
         
         # players can upload tokens to an existing game
-        ret = self.app.post('/arthur/test-game-1/upload',
+        ret = self.app.post('/game/arthur/test-game-1/upload',
             upload_files=[
                 ('file[]', 'test.png', img_small2),
                 ('file[]', 'another.png', img_small3)
@@ -1072,7 +1097,7 @@ class VttTest(EngineBaseTest):
         self.assertEqual(id_from_url(data['urls'][1]), 2)
 
         # re-uploading image will return existing URLs instead of new ones
-        ret = self.app.post('/arthur/test-game-1/upload',
+        ret = self.app.post('/game/arthur/test-game-1/upload',
             upload_files=[
                 ('file[]', 'test.png', img_small2),
                 ('file[]', 'another.bmp', img_small3),
@@ -1095,7 +1120,7 @@ class VttTest(EngineBaseTest):
         # cannot upload another background image (other uploads are ignored during this request)
         images = os.listdir(self.engine.paths.getGamePath('arthur', 'test-game-1'))
         self.assertEqual(len(images), 4) # 3 + md5-file
-        ret = self.app.post('/arthur/test-game-1/upload',
+        ret = self.app.post('/game/arthur/test-game-1/upload',
             upload_files=[
                 ('file[]', 'another.jpg', img_small4),
                 ('file[]', 'test.png', img_large),
@@ -1115,7 +1140,7 @@ class VttTest(EngineBaseTest):
         game_cache = gm_cache.getFromUrl('test-game-1')
         gm_player  = game_cache.insert('GM Arthur', 'red', True)
         game_cache.onCreateScene(gm_player, {})
-        ret = self.app.post('/arthur/test-game-1/upload',
+        ret = self.app.post('/game/arthur/test-game-1/upload',
             upload_files=[
                 ('file[]', 'test.png', img_large),
                 ('file[]', 'another.jpg', img_small2),
@@ -1134,14 +1159,14 @@ class VttTest(EngineBaseTest):
         game_cache = gm_cache.getFromUrl('test-game-1')
         gm_player  = game_cache.insert('GM Arthur', 'red', True)
         game_cache.onCreateScene(gm_player, {})
-        ret = self.app.post('/arthur/test-game-1/upload',
+        ret = self.app.post('/game/arthur/test-game-1/upload',
             upload_files=[
                 ('file[]', 'test.png', img_huge)
             ], xhr=True, expect_errors=True)
         self.assertEqual(ret.status_int, 403)
 
         # cannot upload image to unknown game
-        ret = self.app.post('/arthur/test-game-1456/upload',
+        ret = self.app.post('/game/arthur/test-game-1456/upload',
             upload_files=[
                 ('file[]', 'test.png', img_small2),
                 ('file[]', 'another.png', img_small3)
@@ -1149,7 +1174,7 @@ class VttTest(EngineBaseTest):
         self.assertEqual(ret.status_int, 404)
         
         # cannot upload image to unknown GM
-        ret = self.app.post('/bob/test-game-1/upload',
+        ret = self.app.post('/game/bob/test-game-1/upload',
             upload_files=[
                 ('file[]', 'test.png', img_small2),
                 ('file[]', 'another.png', img_small3)
@@ -1157,7 +1182,7 @@ class VttTest(EngineBaseTest):
         self.assertEqual(ret.status_int, 404)
 
         # cannot upload unsupported mime type 
-        ret = self.app.post('/arthur/test-game-1/upload',
+        ret = self.app.post('/game/arthur/test-game-1/upload',
             upload_files=[
                 ('file[]', 'test.png', img_small2),
                 ('file[]', 'foo.exe', b''),
@@ -1170,7 +1195,7 @@ class VttTest(EngineBaseTest):
         
         # can upload music
         self.assertEqual(count_mp3s(), 0)
-        ret = self.app.post('/arthur/test-game-1/upload',
+        ret = self.app.post('/game/arthur/test-game-1/upload',
             upload_files=[
                 ('file[]', 'sample.mp3', b'')
             ], xhr=True)
@@ -1181,7 +1206,7 @@ class VttTest(EngineBaseTest):
         self.assertEqual(count_mp3s(), 1)
 
         # can upload multiple tracks
-        ret = self.app.post('/arthur/test-game-1/upload',
+        ret = self.app.post('/game/arthur/test-game-1/upload',
             upload_files=[
                 ('file[]', 'sample.mp3', b''),
                 ('file[]', 'foo.mp3', b''),
@@ -1194,7 +1219,7 @@ class VttTest(EngineBaseTest):
         self.assertEqual(count_mp3s(), 4)
         
         # can upload music and images
-        ret = self.app.post('/arthur/test-game-1/upload',
+        ret = self.app.post('/game/arthur/test-game-1/upload',
             upload_files=[                
                 ('file[]', 'test.png', img_small2),
                 ('file[]', 'sample.mp3', b''),
@@ -1210,7 +1235,7 @@ class VttTest(EngineBaseTest):
 
         # cannot upload too much music (referring music slots)
         self.assertEqual(self.engine.file_limit['num_music'], 5)
-        ret = self.app.post('/arthur/test-game-1/upload',
+        ret = self.app.post('/game/arthur/test-game-1/upload',
             upload_files=[
                 ('file[]', 'sample.mp3', b''),
                 ('file[]', 'foo.mp3', b'')
@@ -1234,7 +1259,7 @@ class VttTest(EngineBaseTest):
         self.app.reset()
         
         # upload music     
-        ret = self.app.post('/arthur/test-game-1/upload',
+        ret = self.app.post('/game/arthur/test-game-1/upload',
             upload_files=[
                 ('file[]', 'sample.mp3', b''),
                 ('file[]', 'foo.mp3', b''),
@@ -1248,11 +1273,11 @@ class VttTest(EngineBaseTest):
 
         # can query existing slots
         for slot_id in data['music']:
-            ret = self.app.get('/music/arthur/test-game-1/{0}.mp3?update=0815'.format(slot_id))
+            ret = self.app.get('/asset/arthur/test-game-1/{0}.mp3?update=0815'.format(slot_id))
             self.assertEqual(ret.status_int, 200)
 
         # cannot query invalid slot
-        ret = self.app.get('/music/arthur/test-game-1/14.mp3?update=0815', expect_errors=True)
+        ret = self.app.get('/asset/arthur/test-game-1/14.mp3?update=0815', expect_errors=True)
         self.assertEqual(ret.status_int, 404)
 
     def test_upload_background(self):

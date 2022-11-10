@@ -52,6 +52,9 @@
             </select>
         </p>
 
+        <p>
+            <input type="checkbox" id="global" /><label for="global" title="URL WITHOUT GAME">GAME-INDEPENDENT</label>
+        </p>
         <input type="hidden" id="schedule_base_url" value="" />
         <input type="button" onClick="createCountdown();" value="START COUNTDOWN" />
     </form>
@@ -59,7 +62,7 @@
 
 <hr />
 
-<h1>GAMES by {{gm.name}}</h1>
+<h1>GAMES by <a href="/vtt/logout" title="CLICK TO LOGOUT">{{gm.name}}</a></h1>
 
     <div class="form">
         <p>ENTER GAME NAME (optional)</p>
@@ -90,4 +93,4 @@
 <div id="popup"></div>
 <div id="hint"></div>   
 
-%include("footer")
+%include("footer", gm=gm)
